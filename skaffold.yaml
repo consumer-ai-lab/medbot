@@ -1,0 +1,8 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+manifests:
+  rawYaml:
+    - ./infra/k8s/*
+build:
+  local:
+    push: false
