@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . /app
 
-RUN pip install --no-cache-dir fastapi uvicorn redis requests tiktoken langchain python-dotenv postgres psycopg2-binary pgvector google-ai-generativelanguage google-api-core google-auth google-generativeai googleapis-common-protos
+RUN pip install -r requirements.txt
 
 # install postgresql client
 RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
