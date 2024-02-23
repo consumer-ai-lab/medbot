@@ -44,6 +44,7 @@ pydantic==2.6.1
 pydantic_core==2.16.2
 pypdf==4.0.2
 python-dotenv==1.0.1
+python-multipart==0.0.9
 PyYAML==6.0.1
 redis==5.0.1
 regex==2023.12.25
