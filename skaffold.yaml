@@ -6,3 +6,13 @@ manifests:
 build:
   local:
     push: false
+  artifacts:
+    - image: adityabhattad/question-answer
+      context: question_answer
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.py'
+            dest: .
+  

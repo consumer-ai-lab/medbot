@@ -1,6 +1,39 @@
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: qa-deployment
-# spec:
-#   replicas: 1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qa-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: question-answer
+  template:
+    metadata:
+      labels:
+        app: question-answer
+    spec:
+      containers:
+        - name: question-answer
+          image: adityabhattad/question-answer
+          env:
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: google-secret
+                  key: GOOGLE_API_KEY
+            - name: CONNECTION_URI
+              value: 'postgresql+psycopg2://admin:admin@postgres-service:5432/vectordb'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qa-service
+spec:
+  selector:
+    app: question-answer
+  type: ClusterIP
+  ports:
+    - name: question-answer
+      protocol: TCP
+      port: 8000
+      targetPort: 80
