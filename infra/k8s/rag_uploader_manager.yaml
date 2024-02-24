@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-uploader-deployment
+spec:
+  selector:
+    matchLabels:
+      app: rag-uploader
+  template:
+    metadata:
+      labels:
+        app: rag-uploader
+    spec:
+      containers:
+      - name: rag-uploader
+        image: adityabhattad/rag-uploader
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: google-secret
+                  key: GOOGLE_API_KEY
+            - name: CONNECTION_URI
+              value: 'postgresql+psycopg2://admin:admin@postgres-service:5432/vectordb'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-uploader-service
+spec:
+  selector:
+    app: rag-uploader
+  ports:
+    - name: rag-uploader
+      protocol: TCP
+      port: 8000
+      targetPort: 80

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis
+  name: redis-deploymemt
 spec:
   replicas: 1
   selector:
@@ -15,6 +15,10 @@ spec:
       containers:
         - name: redis
           image: redis:latest
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
           volumeMounts:
             - name: redis-data
               mountPath: /data
@@ -25,7 +29,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis
+  name: redis-service
 spec:
   selector:
     app: redis

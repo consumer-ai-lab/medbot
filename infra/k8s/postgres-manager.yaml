@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres
+  name: postgres-deployment
 spec:
   replicas: 1
   selector:
@@ -15,6 +15,10 @@ spec:
       containers:
         - name: postgres
           image: ankane/pgvector:latest
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
           ports:
             - containerPort: 5432
           env:
