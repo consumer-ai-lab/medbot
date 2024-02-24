@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: query-preprocessing-deployment
+spec:
+  selector:
+    matchLabels:
+      app: query-preprocessing
+  template:
+    metadata:
+      labels:
+        app: query-preprocessing
+    spec:
+      containers:
+      - name: query-preprocessing
+        image: adityabhattad/query-preprocessing
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+        env:
+          - name: GOOGLE_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: google-secret
+                key: GOOGLE_API_KEY
+          - name: REDIS_HOST
+            value: redis-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: query-preprocessing-service
+spec:
+  selector:
+    app: query-preprocessing
+  type: ClusterIP
+  ports:
+    - name: query-preprocessing
+      protocol: TCP
+      port: 8000
+      targetPort: 80
+

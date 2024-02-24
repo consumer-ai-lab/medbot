@@ -23,4 +23,12 @@ build:
         manual:
           - src: 'src/**/*.py' 
             dest: .
+    - image: adityabhattad/query-preprocessing
+      context: query_preprocessing_service
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.py' 
+            dest: .
   

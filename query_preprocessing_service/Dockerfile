@@ -6,8 +6,7 @@ COPY . /app
 
 RUN pip install -r requirements.txt
 
-# install postgresql client
-RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
 
 EXPOSE 80
 

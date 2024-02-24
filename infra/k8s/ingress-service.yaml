@@ -17,7 +17,7 @@ spec:
         pathType: ImplementationSpecific
         backend:
           service:
-            name: qa-service
+            name: query-preprocessing-service
             port:
               number: 8000
       - path: /api/rag/?(.*)

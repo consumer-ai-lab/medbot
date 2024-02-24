@@ -16,7 +16,7 @@ load_dotenv(find_dotenv())
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 
 
-app = FastAPI(root_path="/api/chat")
+app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
