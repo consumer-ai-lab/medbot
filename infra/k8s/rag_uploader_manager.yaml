@@ -24,7 +24,7 @@ spec:
                 secretKeyRef:
                   name: google-secret
                   key: GOOGLE_API_KEY
-            - name: CONNECTION_URI
+            - name: CONNECTION_STRING
               value: 'postgresql+psycopg2://admin:admin@postgres-service:5432/vectordb'
 ---
 apiVersion: v1

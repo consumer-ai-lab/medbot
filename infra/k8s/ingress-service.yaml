@@ -20,3 +20,10 @@ spec:
             name: qa-service
             port:
               number: 8000
+      - path: /api/rag/?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: rag-uploader-service
+            port: 
+              number: 8000

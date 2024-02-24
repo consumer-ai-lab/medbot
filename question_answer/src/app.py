@@ -6,7 +6,6 @@ from pydantic import BaseModel,Field
 from langchain.prompts import PromptTemplate
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_community.vectorstores import FAISS
 from langchain.chains import LLMChain
 import google.generativeai as genai
 import os
@@ -14,7 +13,6 @@ from langchain_core.messages import HumanMessage
 from langchain_community.document_loaders import PyPDFLoader
 
 load_dotenv(find_dotenv())
-load_dotenv()
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 
 
