@@ -29,28 +29,15 @@ app.add_middleware(
 class GenerateRequest(BaseModel):
     query: str
 
-@app.post('/generate')
-async def query(req_body:GenerateRequest):
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.5,convert_system_message_to_human=True)
-    res=llm.invoke(
-    [
-        HumanMessage(
-            content=req_body.query
-        )
-    ]
-    )
-    return {"ai_response":res.content}
+@app.post('/get-ai-response')
+def query(req_body:GenerateRequest):
+    # llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.5,convert_system_message_to_human=True)
+    # res=llm.invoke(
+    # [
+    #     HumanMessage(
+    #         content=req_body.query
+    #     )
+    # ]
+    # )
+    return {"ai_response":"Hello, back!"}
 
-async def process_uploaded_file(file: UploadFile):
-  loader = PyPDFLoader(file)
-  pages = loader.load_and_split()
-  print(pages[0])
-
-
-@app.post('/upload')
-async def upload_file(file:UploadFile=File(...)):
-    try:
-        await process_uploaded_file(file)
-    except:
-        return {"error":"There was an error while saving the file"}
-    
