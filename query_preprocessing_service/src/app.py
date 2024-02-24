@@ -29,7 +29,7 @@ def get_ai_message(req_body:Message):
     try:
         response = requests.post(
             f'http://qa-service:8000/get-ai-response',
-            json={"query": req_body.content}
+            json={"query": req_body.content,"conversation_id":req_body.conversation_id}
         )
         response.raise_for_status()
         ai_response = response.json()

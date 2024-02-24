@@ -11,15 +11,15 @@ from dotenv import find_dotenv, load_dotenv
 set_debug(True)
 load_dotenv(find_dotenv())
 
+CONNECTION_STRING = os.getenv('CONNECTION_STRING')
+COLLECTION_NAME = os.getenv('CONNECTION_NAME')
+
 def generate_vector_store(file_path:str):
     loader = PyPDFLoader(file_path)
     pages = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500,chunk_overlap=50)
     documents = text_splitter.split_documents(pages)
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-
-    CONNECTION_STRING = os.getenv('CONNECTION_STRING')
-    COLLECTION_NAME = os.getenv('CONNECTION_NAME')
 
     PGVector.from_documents(
         documents,
