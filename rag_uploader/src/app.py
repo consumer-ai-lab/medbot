@@ -1,12 +1,8 @@
-from fastapi import FastAPI,UploadFile,File
+from fastapi import FastAPI,UploadFile,File,Response,HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_community.document_loaders import PyPDFLoader
-from dotenv import find_dotenv,load_dotenv
+from .ingest import generate_vector_store,test_query
 import os
-
-load_dotenv(find_dotenv())
+import logging
 
 
 app = FastAPI(root_path='/api/rag')
@@ -18,19 +14,45 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-async def process_uploaded_file(file: UploadFile):
-  loader = PyPDFLoader(file)
-  pages = loader.load_and_split()
-  print(pages[0])
 
 @app.get("/")
 def root():
     return {"message":"hello from rag_uploader"}
 
+@app.get('/test')
+def test_vector_database(query:str):
+    test_query(query=query)
+    return Response(content="see the logs",status_code=200)
+
 
 @app.post('/upload')
-async def upload_file(file:UploadFile=File(...)):
+def upload_file(file:UploadFile=File(...)):
+    max_size=50*1024*1024
     try:
-        await process_uploaded_file(file)
-    except:
-        return {"error":"There was an error while saving the file"}
+        size = 0
+        for chunk in file.file:
+            size += len(chunk)
+            if size > max_size:
+                return Response(content="file too large",status_code=413)
+        allowed_file_types = ["application/pdf"]
+        if file.content_type not in allowed_file_types:
+            return Response(content="invalid file type",status_code=415)
+        try:
+            # os.makedirs('./temp_data', exist_ok=True)
+            file.file.seek(0)
+            content=file.file.read() 
+            with open(f'./temp_data/{file.filename}','wb') as f:
+                f.write(content)
+        except:
+            return Response(content="there was error processing thei  file",status_code=500)
+        finally:
+            file.file.close()
+
+        generate_vector_store(f'./temp_data/{file.filename}')
+ 
+        os.remove(f'./temp_data/{file.filename}')
+
+        return Response(content="file processed successfully",status_code=200)
+    except Exception as e:
+        logging.exception("Error processing file: %s", e) 
+        return Response(content="there was error processing thei  file",status_code=500)

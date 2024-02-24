@@ -1,44 +1,48 @@
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader,TextLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
-import google.generativeai as genai
 from langchain.globals import set_debug
-from util import get_absolute_path
 from langchain.vectorstores.pgvector import PGVector
 import os
 from dotenv import find_dotenv, load_dotenv
 
+set_debug(True)
 load_dotenv(find_dotenv())
 
-
-genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
-set_debug(True)
-
-def generate_vector_store():
-    loader = DirectoryLoader(
-    "./knowledge_base", glob="**/*.txt", loader_cls=TextLoader, show_progress=True
-    )
-    documents = loader.load()
+def generate_vector_store(file_path:str):
+    loader = PyPDFLoader(file_path)
+    pages = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500,chunk_overlap=50)
-    texts = text_splitter.split_documents(documents)
+    documents = text_splitter.split_documents(pages)
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
-    CONNECTION_STRING = "postgresql+psycopg2://admin:admin@127.0.0.1:5433/vectordb"
-    COLLECTION_NAME = "vectordb"
+    CONNECTION_STRING = os.getenv('CONNECTION_STRING')
+    COLLECTION_NAME = os.getenv('CONNECTION_NAME')
 
-    store=PGVector.from_documents(
+    PGVector.from_documents(
         documents,
         embeddings,
         collection_name=COLLECTION_NAME,
         connection_string=CONNECTION_STRING,
     )
 
-    docs = store.similarity_search("it works?")
-    print(docs[0])
     print("Successfully created an index")
 
 
+def test_query(query:str):
+
+    CONNECTION_STRING = os.getenv('CONNECTION_STRING')
+    COLLECTION_NAME = os.getenv('CONNECTION_NAME')
+
+    store = PGVector(
+        collection_name=COLLECTION_NAME,
+        connection_string=CONNECTION_STRING,
+        embedding_function = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    )
+    result = store.similarity_search(query=query)
+    print(result)
+
 if __name__=="__main__":
-    generate_vector_store()
+    pass

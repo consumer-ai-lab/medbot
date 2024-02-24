@@ -14,10 +14,10 @@ spec:
       containers:
       - name: rag-uploader
         image: adityabhattad/rag-uploader
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
         env:
             - name: GOOGLE_API_KEY
               valueFrom:
@@ -26,6 +26,8 @@ spec:
                   key: GOOGLE_API_KEY
             - name: CONNECTION_STRING
               value: 'postgresql+psycopg2://admin:admin@postgres-service:5432/vectordb'
+            - name: CONNECTION_NAME
+              value: 'vectordb'
 ---
 apiVersion: v1
 kind: Service
