@@ -24,7 +24,16 @@ MedBot is an experimental microservices-based chat API project. It investigates 
 
 ## Architecture
 
-An architecture diagram is provided to provide a visual understanding of the system's design:
+The cluster contains a total of 5 pods, each containing specific components as follows:
+
+- **Redis**: Utilized for storing the chat history.
+- **Postgres**: Serves as a vector databas.
+- **Vector Database Management Service**: Manages the addition and removal of data from the vector database.
+- **Query Preprocessing Service**: Acts as the chat service's entry point. This service performs multiple functions:
+   - It saves user chats to Redis.
+   - Messages are then forwarded to the Question and Answer (QA) service.
+   - Once the QA service returns a response, it is saved to the Redis database before being sent back as the final response to the user.
+- **Question and Answer Services**: These services process the request object, which includes the query and the conversation_id. The conversation_id is used to fetch the chat history, which, along with the latest query, is used by the `ConversationalRetrievalChain`. It process retrieves relevant documents from the vector database. The documents are then used as context for the LLM. The response from the LLM is subsequently sent back to the Query Preprocessing Service.
 ![Architecture](https://github.com/consumer-ai-lab/microservices-based-chatbot-api/assets/93488388/465aaad8-31a1-4ca1-8136-72c6a46232db)
 
 
@@ -65,7 +74,7 @@ The project is structured as follows:
 │   ├── src
 │   │   ├── __init__.py
 │   │   ├── app.py
-│   │   └── ingest.py
+│   │   └── vector_store_manager.py
 │   ├── temp_data
 └── skaffold.yaml
 ```
