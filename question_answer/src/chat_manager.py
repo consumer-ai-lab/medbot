@@ -16,9 +16,9 @@ load_dotenv(find_dotenv())
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 
 class ChatManager:
-    def __init__(self, connection_string: str, collection_name: str):
-        self.connection_string = connection_string
-        self.collection_name = collection_name
+    def __init__(self):
+        self.connection_string = os.getenv('CONNECTION_STRING')
+        self.collection_name = os.getenv('CONNECTION_NAME')
     
     def get_custom_prompt(self):
         prompt_template = """
@@ -78,6 +78,4 @@ class ChatManager:
         return res["answer"]
     
 def get_chat_manager():
-    connection_string = os.getenv('CONNECTION_STRING')
-    collection_name = os.getenv('CONNECTION_NAME')
-    return ChatManager(connection_string, collection_name)
+    return ChatManager()

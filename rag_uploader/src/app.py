@@ -1,19 +1,20 @@
-from fastapi import FastAPI,UploadFile,File,Response,HTTPException
+from fastapi import FastAPI,UploadFile,File,Response
 from fastapi.middleware.cors import CORSMiddleware
-from .ingest import generate_vector_store,test_query
+from .vector_store_manager import get_vector_store_manager
 import os
 import logging
 
 
 app = FastAPI(root_path='/api/rag')
 app.add_middleware(
-    CORSMiddleware,
+    CORSMiddleware, 
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
 )
 
+vector_store_manager = get_vector_store_manager()
 
 @app.get("/")
 def root():
@@ -21,7 +22,7 @@ def root():
 
 @app.get('/test')
 def test_vector_database(query:str):
-    test_query(query=query)
+    vector_store_manager.test_query(query=query)
     return Response(content="see the logs",status_code=200)
 
 
@@ -48,7 +49,7 @@ def upload_file(file:UploadFile=File(...)):
         finally:
             file.file.close()
 
-        generate_vector_store(f'./temp_data/{file.filename}')
+        vector_store_manager.generate_vector_store(f'./temp_data/{file.filename}')
  
         os.remove(f'./temp_data/{file.filename}')
 

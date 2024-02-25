@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import requests
-from .redis_manager import RedisManager
+from .redis_manager import get_redis_manager
 from pydantic import BaseModel
 
 app = FastAPI(root_path="/api/chat")
@@ -24,7 +24,7 @@ def root():
 
 @app.post('/generate')
 def get_ai_message(req_body:Message):
-    chat_manager = RedisManager(req_body.conversation_id)
+    chat_manager = get_redis_manager(req_body.conversation_id)
     chat_manager.add_user_message(req_body.content)
     try:
         response = requests.post(
