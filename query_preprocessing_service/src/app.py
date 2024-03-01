@@ -37,5 +37,6 @@ def get_ai_message(req_body:Message):
         return {"error": f"Request to qa_service failed: {e}"}
     else:
         chat_manager.add_ai_message(ai_response.get('ai_response'))
+        print(chat_manager.get_messages())
         return {"ai_response":ai_response.get("ai_response")}
     

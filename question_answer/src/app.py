@@ -23,6 +23,6 @@ class GenerateRequest(BaseModel):
 @app.post('/get-ai-response')
 def query(req_body:GenerateRequest):
     chat_manager = get_chat_manager()
-    response = chat_manager.get_response(query=req_body.query,session_id=req_body.conversation_id)
-    return {"ai_response":response}
+    # response = chat_manager.get_response(query=req_body.query,session_id=req_body.conversation_id)
+    return {"ai_response":"response"}
 
