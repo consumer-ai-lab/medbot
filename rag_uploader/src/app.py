@@ -28,7 +28,7 @@ def test_vector_database(query:str):
 
 @app.post('/upload')
 def upload_file(file:UploadFile=File(...)):
-    max_size=50*1024*1024
+    max_size=500*1024*1024
     try:
         size = 0
         for chunk in file.file:
@@ -39,13 +39,13 @@ def upload_file(file:UploadFile=File(...)):
         if file.content_type not in allowed_file_types:
             return Response(content="invalid file type",status_code=415)
         try:
-            # os.makedirs('./temp_data', exist_ok=True)
+            os.makedirs('./temp_data', exist_ok=True)
             file.file.seek(0)
             content=file.file.read() 
             with open(f'./temp_data/{file.filename}','wb') as f:
                 f.write(content)
         except:
-            return Response(content="there was error processing thei  file",status_code=500)
+            return Response(content="there was error while processing the file",status_code=500)
         finally:
             file.file.close()
 
@@ -55,5 +55,5 @@ def upload_file(file:UploadFile=File(...)):
 
         return Response(content="file processed successfully",status_code=200)
     except Exception as e:
-        logging.exception("Error processing file: %s", e) 
+        print("Error processing file: %s", e) 
         return Response(content="there was error processing thei  file",status_code=500)

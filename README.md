@@ -2,11 +2,11 @@
 
 ## Description
 
-MedBot is an experimental microservices-based chat API project. It investigates the integration of persistent memory, document retrieval capabilities, and LLMs within a scalable containerized architecture.
+MedBot is an experimental microservices-based chat API project. It explores integrating persistent memory, document retrieval capabilities, and Generative AI within a containerized architecture.
 
 ## Features
 
-- **Conversational Memory**: The API maintains context across interactions, enabling it to deliver more personalized responses.
+- **Conversational Memory**: The API maintains context across interactions, enabling it to deliver better responses.
 
 - **Document Integration**: It uses Retrieval-Augmented Generation (RAG) techniques, the API ensures that responses are better contextualized, by providing relevant information from documents as context to the LLM using prompt engineering.
 
@@ -24,17 +24,24 @@ MedBot is an experimental microservices-based chat API project. It investigates 
 
 ## Architecture
 
-The cluster contains a total of 5 pods, each containing specific components as follows:
+The architecture comprises five pods, each hosting specific components:
 
-- **Redis**: Utilized for storing the chat history.
-- **Postgres**: Serves as a vector databas.
+- **Redis**: Utilized for storing the temporary chat history.
+- **Postgres**: Serves as a vector database.
 - **Vector Database Management Service**: Manages the addition and removal of data from the vector database.
 - **Query Preprocessing Service**: Acts as the chat service's entry point. This service performs multiple functions:
-   - It saves user chats to Redis.
-   - Messages are then forwarded to the Question and Answer (QA) service.
-   - Once the QA service returns a response, it is saved to the Redis database before being sent back as the final response to the user.
-- **Question and Answer Services**: These services process the request object, which includes the query and the conversation_id. The conversation_id is used to fetch the chat history, which, along with the latest query, is used by the `ConversationalRetrievalChain`. It process retrieves relevant documents from the vector database. The documents are then used as context for the LLM. The response from the LLM is subsequently sent back to the Query Preprocessing Service.
-![Architecture](https://github.com/consumer-ai-lab/microservices-based-chatbot-api/assets/93488388/465aaad8-31a1-4ca1-8136-72c6a46232db)
+   - Fetches the chat history for the ongoing session.
+   - Summarizes the chat history using LLM.
+   - Uses the latest query and the chat summary to generate a single consolidated query using LLM.
+   - The newly generated query is then passed to **question answer service**.
+   - Once the **question answer service** returns a response, the new message exchange between AI and the user is saved to redis.
+   - Finally the response is returned back to the client.
+- **Question and Answer Service**: When received a query from **query preprocessing service**:
+   - Similarity search is performed on the query.
+   - The relevant content is fetched from the vector database.
+   - The document is then passed to LLM as a context with the original query, The generated response from the LLM is passed back to the **query proprocessing service**. 
+![Screenshot 2024-03-03 044322](https://github.com/adityabhattad2021/microservices-based-chatbot-api/assets/93488388/b9227a71-48bf-4df8-89e8-6136cc43ac23)
+
 
 
 ## Folder Structure
@@ -42,40 +49,40 @@ The cluster contains a total of 5 pods, each containing specific components as f
 The project is structured as follows:
 
 ```
-.
+├── README.md
 ├── infra
 │   └── k8s
 │       ├── ingress-service.yaml
 │       ├── init-sql.yaml
 │       ├── postgres-manager.yaml
 │       ├── query-preprocessing-manager.yaml
-│       ├── question_answer_manager.yaml
+│       ├── question_anwer_manager.yaml
 │       ├── rag_uploader_manager.yaml
 │       ├── redis-manager.yaml
+│       └── secrets.yaml
 ├── query_preprocessing_service
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   ├── src
-│   │   ├── __init__.py
-│   │   ├── app.py
-│   │   └── redis_manager.py
+│       ├── __init__.py
+│       ├── app.py
+│       ├── chat_summary_manager.py
+│       └── redis_manager.py
 ├── question_answer
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   ├── src
 │   │   ├── __init__.py
 │   │   ├── app.py
-│   │   ├── chat_manager.py
-│   │   └── util.py
+│   │   └── query_manager.py
 │   └── wait-for-postgres.sh
 ├── rag_uploader
 │   ├── Dockerfile
 │   ├── requirements.txt
-│   ├── src
-│   │   ├── __init__.py
-│   │   ├── app.py
-│   │   └── vector_store_manager.py
-│   ├── temp_data
+│   └── src
+│       ├── __init__.py
+│       ├── app.py
+│       └── vector_store_manager.py
 └── skaffold.yaml
 ```
 
