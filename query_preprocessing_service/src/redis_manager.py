@@ -5,9 +5,9 @@ class RedisManager:
     def __init__(
             self,
             session_id:str,
-            redis_url="redis-service",
-            redis_port=6379,
-            chats_life_time=6000
+            redis_url,
+            redis_port,
+            chats_life_time
         ):
         self.history = redis.Redis(
             host=redis_url,
@@ -42,5 +42,8 @@ class RedisManager:
 def message_to_dict(message,type):
     return {"type":type,"content":message}
 
-def get_redis_manager(session_id:str):
-    return RedisManager(session_id=session_id)
+def get_redis_manager(session_id: str, redis_url: str = None, redis_port: int = None, chats_life_time: int = None) -> RedisManager:
+    _redis_url = redis_url if redis_url is not None else 'redis-service'
+    _redis_port = redis_port if redis_port is not None else 6379
+    _chats_life_time = chats_life_time if chats_life_time is not None else 6000
+    return RedisManager(session_id=session_id,redis_url=_redis_url,redis_port=_redis_port,chats_life_time=_chats_life_time)
