@@ -6,7 +6,7 @@ from langchain.globals import set_debug
 import os
 from dotenv import find_dotenv, load_dotenv
 
-set_debug(False)
+set_debug(True)
 
 load_dotenv(find_dotenv())
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
@@ -30,7 +30,7 @@ class ChatSummaryManager:
 
     def generate_query(self,chats:list,new_query:str)->str:
         summary = self.summarize_chats(chats)
-        system_message=SystemMessage(content="You are an AI assistant with the capability to process summaries of conversations and related follow-up questions. Your task is to rephrase a given follow-up question so it can be understood as a standalone question, without needing additional context from the conversation summary. Ensure the rephrased question maintains the essence and specificity of the original query, allowing for clear and concise communication. Given below is the example of what kind of response is expected\nEXAMPLE\nSummary: The conversation involves an AI assistant providing guidance on integrating a function into a project, including parameter passing, error handling, and thread-safety\nfollow-up question: can you give me an example of the above?\nResponse: Can you provide an example of how to integrate a function into a project, including how to pass parameters, handle errors, and ensure the function is thread-safe?'\nEXAMPLE ENDS\n")
+        system_message=SystemMessage(content="You are an AI assistant with the capability to process summaries of conversations and related follow-up questions. Your task is to rephrase a given follow-up question so it can be understood as a standalone question, without needing additional context from the conversation summary. Ensure the rephrased question maintains the essence and specificity of the original query, allowing for clear and concise communication. Given below is the example of what kind of response is expected\nEXAMPLE\nSummary: The conversation involves an AI assistant providing guidance on integrating a function into a project, including parameter passing, error handling, and thread-safety\nfollow-up question: can you give me an example of the above?\nexample response: Can you provide an example of how to integrate a function into a project, including how to pass parameters, handle errors, and ensure the function is thread-safe?'\nEXAMPLE ENDS\n")
         human_message=HumanMessage(content=f"Summary: {summary} follow up question: {new_query}")
         res = self.llm.invoke([system_message,human_message])
         return res.content

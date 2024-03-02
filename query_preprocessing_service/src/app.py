@@ -26,7 +26,6 @@ def root():
 @app.post('/generate')
 def get_ai_message(req_body:Message):
     chat_manager = get_redis_manager(req_body.conversation_id)
-    chat_manager.add_user_message(req_body.content)
     chat_history = chat_manager.get_messages()
     summary_manager = get_chat_summary_manager(temperature=0.2)
 
@@ -45,5 +44,4 @@ def get_ai_message(req_body:Message):
     else:
         chat_manager.add_user_message(req_body.content)
         chat_manager.add_ai_message(ai_response.get('ai_response'))
-        print(chat_manager.get_messages())
         return {"ai_response":ai_response.get("ai_response")}
