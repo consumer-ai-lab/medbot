@@ -28,9 +28,9 @@ def get_ai_message(req_body:Message):
     chat_manager = get_redis_manager(req_body.conversation_id)
     chat_manager.add_user_message(req_body.content)
     chat_history = chat_manager.get_messages()
-    summary_manager = get_chat_summary_manager()
+    summary_manager = get_chat_summary_manager(temperature=0.2)
 
-    # Generate a standalone query for RetrivalQA chain.
+    # Generate a standalone query for question answer service.
     query=summary_manager.generate_query(chats=chat_history,new_query=req_body.content)
     try:
         response = requests.post(

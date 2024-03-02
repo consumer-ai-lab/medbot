@@ -17,12 +17,11 @@ class ChatSummaryManager:
         self.temperature = temperature
         self.llm = ChatGoogleGenerativeAI(model=self.model, temperature=self.temperature, convert_system_message_to_human=True)
 
-    @staticmethod
     def combine_messages(self,messages):
         return "\n".join(f"{msg['type']} message: {msg['content']}" for msg in messages)
     
     def summarize_chats(self,chats:list)->str:
-        message_str = self.combine_messages(chats)
+        message_str = self.combine_messages(messages=chats)
         system_message=SystemMessage(content="You are an AI assistant specialized in reading transcripts of conversation between human and AI. Your primary task is to provide brief, accurate summaries of these transcripts, ensuring no important details are omitted.")
         human_message=HumanMessage(content=f"Summarize the below conversation\n{message_str}")
         res = self.llm.invoke([system_message,human_message])
@@ -37,7 +36,7 @@ class ChatSummaryManager:
         return res.content
     
 
-def get_chat_summary_manager(model:str=None,temperature:float=None):
+def get_chat_summary_manager(model:str=None,temperature:float=None)->ChatSummaryManager:
     _model = model if model is not None else "gemini-pro"
     _temperature = temperature if temperature is not None else 0.5
     return ChatSummaryManager(model=_model,temperature=_temperature)

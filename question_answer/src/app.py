@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import find_dotenv, load_dotenv
 from pydantic import BaseModel
-from .chat_manager import get_chat_manager
+from .query_manager import get_query_manager
 
 load_dotenv(find_dotenv())
 
@@ -17,12 +17,10 @@ app.add_middleware(
 
 class GenerateRequest(BaseModel):
     query: str
-    conversation_id:str
-
 
 @app.post('/get-ai-response')
 def query(req_body:GenerateRequest):
-    chat_manager = get_chat_manager()
-    # response = chat_manager.get_response(query=req_body.query,session_id=req_body.conversation_id)
-    return {"ai_response":"response"}
+    query_manager = get_query_manager()
+    response = query_manager.get_response(query=req_body.query)
+    return {"ai_response":response}
 

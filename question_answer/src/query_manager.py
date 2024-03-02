@@ -1,12 +1,10 @@
 from langchain.prompts import PromptTemplate
 from langchain_google_genai import GoogleGenerativeAIEmbeddings,ChatGoogleGenerativeAI
-from langchain.chains import ConversationalRetrievalChain
+from langchain.chains import RetrievalQA
 from langchain.vectorstores.pgvector import PGVector
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_community.chat_message_histories import RedisChatMessageHistory
 import google.generativeai as genai
-import os
 from dotenv import find_dotenv, load_dotenv
+import os
 
 from langchain.globals import set_debug
 
@@ -15,7 +13,7 @@ set_debug(True)
 load_dotenv(find_dotenv())
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 
-class ChatManager:
+class QueryManager:
     def __init__(self):
         self.connection_string = os.getenv('CONNECTION_STRING')
         self.collection_name = os.getenv('CONNECTION_NAME')
@@ -40,7 +38,7 @@ class ChatManager:
 
         """
 
-        prompt = PromptTemplate(template=prompt_template,input_variables=['question','history'])
+        prompt = PromptTemplate(template=prompt_template,input_variables=['context','question'])
         return prompt
     
     def get_retriever(self):
@@ -50,32 +48,25 @@ class ChatManager:
             connection_string=self.connection_string,
             embedding_function=embeddings
         )
-        return store.as_retriever()
+        return store.as_retriever(search_kwargs={'k':5})
     
     def get_retrival_qa_chain(self):
         prompt = self.get_custom_prompt()
         retriever = self.get_retriever()
-        llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.5, convert_system_message_to_human=True)
-        qa_chain = ConversationalRetrievalChain.from_llm(llm=llm, verbose=True, retriever=retriever)
+        llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.5,convert_system_message_to_human=True)
+        qa_chain = RetrievalQA.from_chain_type(
+            llm=llm,
+            chain_type='stuff',
+            retriever=retriever,
+            return_source_documents=False,
+            chain_type_kwargs={'prompt':prompt}
+        )
         return qa_chain
     
-    def get_chain_with_history(self):
-        chain = self.get_retrival_qa_chain()
-        chain_with_history = RunnableWithMessageHistory(
-            chain,
-            lambda session_id: RedisChatMessageHistory(
-                session_id=session_id, url="redis://redis-service:6379"
-            ),
-            input_messages_key="question",
-            history_messages_key="chat_history"
-        )
-        return chain_with_history
+    def get_response(self, query: str)->str:
+        bot = self.get_retrival_qa_chain()
+        res = bot.invoke(query)
+        return res.get("result")
     
-    def get_response(self, query: str, session_id: str):
-        config = {"configurable": {"session_id": session_id}}
-        chain_with_history = self.get_chain_with_history()
-        res = chain_with_history.invoke({"question": query}, config=config)
-        return res["answer"]
-    
-def get_chat_manager():
-    return ChatManager()
+def get_query_manager()->QueryManager:
+    return QueryManager()
