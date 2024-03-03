@@ -1,9 +1,8 @@
-from fastapi import FastAPI,UploadFile,File,Response
+from fastapi import FastAPI,UploadFile,File,Response,BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from .vector_store_manager import get_vector_store_manager
 import os
-import logging
-
+import copy
 
 app = FastAPI(root_path='/api/rag')
 app.add_middleware(
@@ -25,10 +24,28 @@ def test_vector_database(query:str):
     vector_store_manager.test_query(query=query)
     return Response(content="see the logs",status_code=200)
 
+def vectorize_file(file:UploadFile):
+    try:
+        try:
+            os.makedirs('./temp_data', exist_ok=True)
+            file.file.seek(0)
+            content=file.file.read() 
+            with open(f'./temp_data/{file.filename}','wb') as f:
+                f.write(content)
+        except:
+            print("there was error while processing the file")
+        finally:
+            file.file.close()
+        vector_store_manager.generate_vector_store(f'./temp_data/{file.filename}')
+        os.remove(f'./temp_data/{file.filename}')
+        print("Successfully created the vector embeddings.")
+    except:
+        print("there was error while creating the vector embeddings for the file.")
+
 
 @app.post('/upload')
-def upload_file(file:UploadFile=File(...)):
-    max_size=500*1024*1024
+async def upload_file(file:UploadFile=File(...), background_tasks: BackgroundTasks=BackgroundTasks()):
+    max_size=50*1024*1024
     try:
         size = 0
         for chunk in file.file:
@@ -38,22 +55,10 @@ def upload_file(file:UploadFile=File(...)):
         allowed_file_types = ["application/pdf"]
         if file.content_type not in allowed_file_types:
             return Response(content="invalid file type",status_code=415)
-        try:
-            os.makedirs('./temp_data', exist_ok=True)
-            file.file.seek(0)
-            content=file.file.read() 
-            with open(f'./temp_data/{file.filename}','wb') as f:
-                f.write(content)
-        except:
-            return Response(content="there was error while processing the file",status_code=500)
-        finally:
-            file.file.close()
-
-        vector_store_manager.generate_vector_store(f'./temp_data/{file.filename}')
- 
-        os.remove(f'./temp_data/{file.filename}')
-
-        return Response(content="file processed successfully",status_code=200)
+        
+        background_tasks.add_task(vectorize_file,file=copy.deepcopy(file))
+        
+        return Response(content="Started processing the file...",status_code=200)
     except Exception as e:
         print("Error processing file: %s", e) 
         return Response(content="there was error processing thei  file",status_code=500)
