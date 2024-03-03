@@ -39,7 +39,8 @@ The architecture comprises five pods, each hosting specific components:
 - **Question and Answer Service**: When received a query from **query preprocessing service**:
    - Similarity search is performed on the query.
    - The relevant content is fetched from the vector database.
-   - The document is then passed to LLM as a context with the original query, The generated response from the LLM is passed back to the **query proprocessing service**. 
+   - The document is then passed to LLM as a context with the original query, The generated response from the LLM is passed back to the **query proprocessing service**.
+    
 ![Screenshot 2024-03-03 044322](https://github.com/adityabhattad2021/microservices-based-chatbot-api/assets/93488388/b9227a71-48bf-4df8-89e8-6136cc43ac23)
 
 
