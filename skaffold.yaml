@@ -19,7 +19,7 @@ build:
       docker:
         dockerfile: Dockerfile
     - image: adityabhattad/query-preprocessing
-      context: query_preprocessing_service
+      context: query_preprocessing
       sync:
         manual:
           - src: src/**/*.py
