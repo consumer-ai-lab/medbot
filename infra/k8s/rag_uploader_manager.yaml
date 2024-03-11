@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: rag-uploader-deployment
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: rag-uploader
