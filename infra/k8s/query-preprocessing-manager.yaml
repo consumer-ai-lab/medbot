@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: query-preprocessing-deployment
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: query-preprocessing
