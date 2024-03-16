@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from .models import User
-from .schemas import UserCreate, User as UserSchema
+from .schemas import UserCreate
+from ..security import verify_password
 
 
 def get_user_by_email(db:Session,email:str):
