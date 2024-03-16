@@ -14,6 +14,8 @@ SECRET_KEY = "c93d119ae1ad7d4b19bce549a9e4f5251a37243a63378613aaab7ebd39d712b7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+models.Base.metadata.create_all(bind=engine)
+
 
 fake_user_db = {
     "johndoe": {
@@ -162,6 +164,9 @@ async def read_own_items(
 
 @app.post('/users/',response_model=schemas.User)
 def create_user(user:schemas.UserCreate,db:Session = Depends(get_db)):
+    print("8"*100)
+    print(user.email)
+    print("8"*100)
     db_user = crud.get_user_by_email(db,email=user.email)
     if db_user:
         raise HTTPException(
