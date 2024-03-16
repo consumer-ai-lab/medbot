@@ -7,8 +7,10 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from . import crud,models,schemas
-from .database import SessionLocal,engine
+from .database import models, schemas
+
+from .database import crud
+from .database.database import SessionLocal,engine
 
 SECRET_KEY = "c93d119ae1ad7d4b19bce549a9e4f5251a37243a63378613aaab7ebd39d712b7"
 ALGORITHM = "HS256"
