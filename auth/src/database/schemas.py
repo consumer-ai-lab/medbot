@@ -16,12 +16,7 @@ class UserBase(BaseModel):
 class UserIn(UserBase):
     password:str
 
-class UserInDBBase(UserBase):
-    id:int
-    class Config:
-        orm_mode = True
-
-class UserInDB(UserInDBBase):
+class UserInDB(UserBase):
     hashed_password:str
 
 class TokenData(BaseModel):

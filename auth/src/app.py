@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routes.main import router
+from .database.config import Base,engine
+
+Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI(root_path="/api/auth")
