@@ -23,7 +23,7 @@ spec:
             - name: GOOGLE_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: google-secret
+                  name: medbot-secret
                   key: GOOGLE_API_KEY
             - name: CONNECTION_STRING
               value: 'postgresql+psycopg2://admin:admin@postgres-service:5432/vectordb'

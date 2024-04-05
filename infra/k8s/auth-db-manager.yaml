@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres-deployment
+  name: auth-db-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgres-vector-db
+      app: auth-db
   template:
     metadata:
       labels:
-        app: postgres-vector-db
+        app: auth-db
     spec:
-      containers:
-        - name: postgres-vector-db
-          image: pgvector/pgvector:pg16
+      containers: 
+        - name: auth-db
+          image: postgres:latest
           resources:
             limits:
               memory: "256Mi"
@@ -22,33 +22,23 @@ spec:
             requests:
               memory: "128Mi"
               cpu: "500m"
-          ports:
-            - containerPort: 5432
           env:
             - name: POSTGRES_USER
               value: 'admin'
             - name: POSTGRES_PASSWORD
               value: 'admin'
             - name: POSTGRES_DB
-              value: 'vectordb'
-          volumeMounts:
-            - name: init-sql
-              mountPath: /docker-entrypoint-initdb.d
-      volumes:
-        - name: init-sql
-          configMap:
-            name: init-sql
+              value: 'authdb'
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-service
+  name: auth-db-service
 spec:
   selector:
-    app: postgres-vector-db
+    app: auth-db
   ports:
-    - name: vector-db
+    - name: auth-db
       protocol: TCP
       port: 5432
       targetPort: 5432
-

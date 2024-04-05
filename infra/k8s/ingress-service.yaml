@@ -28,3 +28,10 @@ spec:
             name: rag-uploader-service
             port: 
               number: 8000
+      - path: /api/auth/?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: auth-service
+            port:
+              number: 8000

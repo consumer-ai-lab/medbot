@@ -2,6 +2,14 @@ apiVersion: skaffold/v4beta9
 kind: Config
 build:
   artifacts:
+    - image: adityabhattad/auth
+      context: auth
+      sync:
+        manual:
+          - src: src/**/*.py
+            dest: .
+      docker:
+        dockerfile: Dockerfile
     - image: adityabhattad/question-answer
       context: question_answer
       sync:
@@ -19,7 +27,7 @@ build:
       docker:
         dockerfile: Dockerfile
     - image: adityabhattad/query-preprocessing
-      context: query_preprocessing_service
+      context: query_preprocessing
       sync:
         manual:
           - src: src/**/*.py
