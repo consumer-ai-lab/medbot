@@ -23,7 +23,7 @@ spec:
           - name: GOOGLE_API_KEY
             valueFrom:
               secretKeyRef:
-                name: google-secret
+                name: medbot-secret
                 key: GOOGLE_API_KEY
           - name: REDIS_HOST
             value: redis-service

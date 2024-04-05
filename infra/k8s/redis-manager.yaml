@@ -15,10 +15,13 @@ spec:
       containers:
         - name: redis
           image: redis:latest
-          # resources:
-          #   limits:
-          #     memory: "128Mi"
-          #     cpu: "500m"
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "2000m"
+            requests:
+              memory: "128Mi"
+              cpu: "500m"
           volumeMounts:
             - name: redis-data
               mountPath: /data

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: postgres:latest
+          command: ['sh', '-c', 'until pg_isready -h auth-db-service -p 5432; do echo waiting for database; sleep 2; done;']
+      containers:
+        - name: auth
+          image: adityabhattad/auth
+          # resources:
+          #   limits:
+          #     memory: "500Mi"
+          #     cpu: "2000m"
+          #   requests:
+          #     memory: "128Mi"
+          #     cpu: "500m"
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: SECRET_KEY
+            - name: ALGORITHM
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: ALGORITHM
+            - name: ACCESS_TOKEN_EXPIRE_MINUTES
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: ACCESS_TOKEN_EXPIRE_MINUTES
+            - name: DATABASE_CONNECTION_URL
+              value: 'postgresql+psycopg2://admin:admin@auth-db-service:5432/authdb'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+spec:
+  selector:
+    app: auth
+  ports:
+    - name: auth
+      protocol: TCP
+      port: 8000
+      targetPort: 80

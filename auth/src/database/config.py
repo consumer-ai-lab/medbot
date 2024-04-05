@@ -8,9 +8,7 @@ load_dotenv()
 
 DATABASE_CONNECTION_URL = os.getenv("DATABASE_CONNECTION_URL")
 
-engine = create_engine(
-    DATABASE_CONNECTION_URL,connect_args={"check_same_thread":False}
-)
+engine = create_engine(DATABASE_CONNECTION_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -22,4 +20,5 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
