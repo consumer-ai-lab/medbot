@@ -15,13 +15,13 @@ spec:
       containers:
         - name: frontend
           image: adityabhattad/frontend
-          resources:
-            limits:
-              memory: "500Mi"
-              cpu: "2000m"
-            requests:
-              memory: "128Mi"
-              cpu: "500m"
+          # resources:
+          #   limits:
+          #     memory: "500Mi"
+          #     cpu: "2000m"
+          #   requests:
+          #     memory: "128Mi"
+          #     cpu: "500m"
 ---
 apiVersion: v1 
 kind: Service
