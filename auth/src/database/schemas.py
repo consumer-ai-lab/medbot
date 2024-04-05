@@ -8,6 +8,12 @@ class UserLevel(str,Enum):
     admin = "admin"
     user = "user"
 
+
+class SignInUser(BaseModel):
+    email:str
+    password:str
+
+
 class UserBase(BaseModel):
     email:str
     user_name:str
