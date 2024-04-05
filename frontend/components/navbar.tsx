@@ -4,6 +4,7 @@ import { Poppins } from "next/font/google";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { ModeToggle } from "./mode-toggle";
 
 
 const font = Poppins({
@@ -61,7 +62,7 @@ export default function Navbar({ }: NavbarProps) {
 
     return (
         <div className="fixed w-full z-50 flex justify-between items-center py-2 px-4 border-b border-primary/10 bg-secondary h-16">
-            <div className="flex text-3xl items-center cursor-pointer" onClick={()=>router.push('/')}>
+            <div className="flex text-3xl items-center cursor-pointer" onClick={() => router.push('/')}>
                 <h1 className={cn("hidden md:block text-xl md:text-3xl font-bold text-primary", font.className)}>
                     medbot.
                 </h1>
@@ -84,7 +85,7 @@ export default function Navbar({ }: NavbarProps) {
                         </Button>
                     )
                 }
-
+                <ModeToggle />
             </div>
         </div>
     )
