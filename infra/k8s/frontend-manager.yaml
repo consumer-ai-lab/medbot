@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: adityabhattad/frontend
+          resources:
+            limits:
+              memory: "500Mi"
+              cpu: "2000m"
+            requests:
+              memory: "128Mi"
+              cpu: "500m"
+---
+apiVersion: v1 
+kind: Service
+metadata:
+  name: frontend-service
+spec: 
+  selector: 
+    app: frontend
+  type: ClusterIP
+  ports:
+    - name: frontend
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

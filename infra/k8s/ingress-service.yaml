@@ -35,3 +35,10 @@ spec:
             name: auth-service
             port:
               number: 8000
+      - path: /?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 3000
