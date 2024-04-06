@@ -19,11 +19,15 @@ class ApiQuery(BaseModel):
     user_id: str
     thread_id: str
     model: Model
-    content: str
+    question: str
 
     def id(self) -> str:
         return f"{self.user_id}/{self.thread_id}"
 
+class QaQuery(BaseModel):
+    model: Model
+    question: str
+    summary: str
 
 @app.get("/")
 def root():
@@ -39,18 +43,21 @@ def get_ai_message(query: ApiQuery):
     summary = summary_manager.summarize_chats(
         history=chat_history
     )
-    # TODO:
-    return summary
-    # try:
-    #     response = requests.post(
-    #         "http://qa-service:8000/get-ai-response", json={"summary": summary, query: Query(question=query.content, model=query.model).json()}
-    #     )
-    #     response.raise_for_status()
-    #     ai_response = response.json()
-    # except requests.exceptions.RequestException as e:
-    #     chat_manager.add_message(Message(role=MessageRole.user, content=query.content))
-    #     return {"error": f"Request to qa_service failed: {e}"}
-    # else:
-    #     chat_manager.add_message(Message(role=MessageRole.user, content=query.content))
-    #     chat_manager.add_message(Message(role=MessageRole.assistant, content=ai_response.get("ai_response")))
-    #     return {"ai_response": ai_response.get("ai_response")}
+    # print(dir(query), query.dict(), QaQuery(**(query.dict() | {"summary": summary})).json())
+    # return summary
+    print(summary)
+    try:
+        response = requests.post(
+            "http://qa-service:8000/get-ai-response", json=QaQuery(**(query.dict() | {"summary": summary})).dict()
+        )
+        response.raise_for_status()
+        print("hehe")
+        ai_response = response.json()
+        print(ai_response)
+    except requests.exceptions.RequestException as e:
+        chat_manager.add_message(Message(role=MessageRole.user, content=query.question))
+        return {"error": f"Request to qa_service failed: {e}"}
+    else:
+        chat_manager.add_message(Message(role=MessageRole.user, content=query.question))
+        chat_manager.add_message(Message(role=MessageRole.assistant, content=ai_response.get("ai_response")))
+        return {"ai_response": ai_response.get("ai_response")}
