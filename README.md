@@ -136,10 +136,7 @@ To set up and run this project locally, follow these steps:
 
 1. **Prerequisites:**
    - Ensure Docker and Kubernetes are installed on your system.
-   - Kubernetes Ingress Controller is required for networking. It can be installed and setup with the following command:
-     ```shell
-     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
-     ```
+
 2. **Set Up Skaffold:**
    - Install and configure Skaffold according to its [documentation](https://skaffold.dev/docs/).
 3. **Configuration:**
@@ -160,17 +157,74 @@ To set up and run this project locally, follow these steps:
      ```yaml
      adityabhattad/query-preprocessing => <your-name>/query-processing
      ```
+
+**Linux**
+1. **Install minikube:**
+   - Go to following link to download minikube
+      ```text
+      https://minikube.sigs.k8s.io/docs/start/
+      ```
+2. **Install skaffold:**
+   - To install skaffold click on following link
+      ```text
+      https://skaffold.dev/docs/install/
+      ```
+3. **Run the following commands:**
+   - Start minikube
+      ```text
+      minikube start
+      minikube addons enable ingress
+      minikube addons enable ingress-dns
+      ```
 4. **Host File Entry:**
-   - Add the following entry to your host file to route local requests:
-     ```text
-     127.0.0.1 medbot.xyz
-     ```
+   - Run following commands
+      1. To fetch ip address run the following command
+      ```text
+      minikube ip
+      ```
+      2. Copy your ip address
+      ```text
+      <your-ip-address>
+      ```
+      3. Run following command
+      ```text
+      sudo nano /etc/hosts
+      ```
+      4. Add this to your host file
+      ```
+      <your-ip-address> medbot.xyz
+      ```
+      5. Save file and exit and go to your project directory
+      ```text
+      ctrl/cmd + x && y
+      ```
 5. **Start the Application:**
    - Navigate to the root directory of the project and run:
      ```shell
      skaffold dev
      ```
+
 6. **Access the Services:**
+   - The frontend can be accessed from `medbot.xyz`.
+   - The chat API can be accessed at `medbot.xyz/api/chat/docs`.
+   - Document upload service is available at `medbot.xyz/api/rag/docs`.   
+
+**Windows**
+1. **Host File Entry:**
+   - Add the following entry to your host file to route local requests:
+     ```text
+     127.0.0.1 medbot.xyz
+     ```
+2. **Start the Application:**
+   - Kubernetes Ingress Controller is required for networking. It can be installed and setup with the following command:
+     ```shell
+     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+     ```
+   - Navigate to the root directory of the project and run:
+     ```shell
+     skaffold dev
+     ```
+3. **Access the Services:**
    - The frontend can be accessed from `medbot.xyz`.
    - The chat API can be accessed at `medbot.xyz/api/chat/docs`.
    - Document upload service is available at `medbot.xyz/api/rag/docs`.
