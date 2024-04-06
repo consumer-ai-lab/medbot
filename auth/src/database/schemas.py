@@ -19,7 +19,7 @@ class UserBase(BaseModel):
     user_name:str
     user_level:UserLevel = UserLevel.user
 
-class UserIn(UserBase):
+class RegisterUser(UserBase):
     password:str
 
 class UserInDB(UserBase):

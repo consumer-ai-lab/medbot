@@ -28,13 +28,13 @@ const routes = [
 interface NavbarProps {
     currentUser?: {
         email: string,
-        id: string,
-        iat: number
+        user_name: string,
+        user_level: string
     }
 }
 
 
-export default function Navbar({ }: NavbarProps) {
+export default function Navbar({ currentUser }: NavbarProps) {
 
     const router = useRouter();
 
@@ -49,9 +49,9 @@ export default function Navbar({ }: NavbarProps) {
                 break;
             }
             case 'Sign Out': {
-                await axios.post('/api/users/signout');
-                router.refresh();
+                await axios.post('/api/auth/signout');
                 router.push('/');
+                router.refresh();
                 break;
             }
             default: {
@@ -69,7 +69,7 @@ export default function Navbar({ }: NavbarProps) {
             </div>
             <div className="flex items-center gap-x-3">
                 {
-                    null === null ? routes.map((route) => {
+                    currentUser === undefined ? routes.map((route) => {
                         return (
                             <Button key={route.href} variant={"ghost"} onClick={() => onClick(route.label)}>
                                 <h1 className={cn("font-bold text-lg cursor-pointer", font.className)} >

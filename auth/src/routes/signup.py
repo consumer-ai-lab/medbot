@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Depends,status
 from fastapi.responses import JSONResponse
-from ..database.schemas import UserBase,UserInDB,UserIn
+from ..database.schemas import UserBase,UserInDB,RegisterUser
 from ..database.models import User
 from ..database.config import get_db
 from ..security import get_password_hash,create_access_token
@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.post("/signup")
 async def sign_up_user(
-    user:UserIn,
+    user:RegisterUser,
     db:Session=Depends(get_db)
 ):
     # check if user exists

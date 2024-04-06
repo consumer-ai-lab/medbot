@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css";
 import Navbar from "@/components/navbar";
+import buildAxiosClient from "@/api/build-axios-client";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,11 +13,32 @@ export const metadata: Metadata = {
   description: "Medbot is a medical chatbot that helps you diagnose your symptoms and find the right treatment.",
 };
 
-export default function RootLayout({
+async function getAuthStatus() {
+  try{
+    const axiosClient = buildAxiosClient();
+    const resp = await axiosClient.get('/api/auth/current-user');
+    return resp;
+  }catch(err){
+    return null;
+  }
+}
+
+type UserType = {
+  email:string
+  user_name:string
+  user_level:string
+} | undefined;
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const resp:any = await getAuthStatus();
+  const data:UserType = resp?.data;
+  console.log(data);
+  
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -26,7 +48,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar />
+          <Navbar currentUser={data} />
           {children}
           <Toaster />
         </ThemeProvider>

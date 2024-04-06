@@ -21,13 +21,15 @@ MedBot is an experimental microservices-based chat API project. It explores inte
 - Postgres
 - Redis
 - Google Gemini APIs
+- NextJs
 
 ## Architecture
 
 The architecture comprises five pods, each hosting specific components:
 
-- **Redis**: Utilized for storing the temporary chat history.
-- **Postgres**: Serves as a vector database.
+- **Redis**: Utilized for storing the chat history.
+- **Postgres**: Serves as a vector database and database for authentication.
+- **Authentication Service**: Manages Authentication for the microservices.
 - **Vector Database Management Service**: Manages the addition and removal of data from the vector database.
 - **Query Preprocessing Service**: Acts as the chat service's entry point. This service performs multiple functions:
    - Fetches the chat history for the ongoing session.
@@ -41,18 +43,58 @@ The architecture comprises five pods, each hosting specific components:
    - The relevant content is fetched from the vector database.
    - The document is then passed to LLM as a context with the original query, The generated response from the LLM is passed back to the **query proprocessing service**.
     
-![Screenshot 2024-03-03 044322](https://github.com/adityabhattad2021/microservices-based-chatbot-api/assets/93488388/b9227a71-48bf-4df8-89e8-6136cc43ac23)
-
-
 
 ## Folder Structure
 
 The project is structured as follows:
 
 ```
+.
 ├── README.md
+├── auth
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── src
+│       ├── app.py
+│       ├── database
+│       ├── routes
+│       └── security.py
+├── frontend
+│   ├── Dockerfile
+│   ├── README.md
+│   ├── api
+│   │   └── build-axios-client.ts
+│   ├── app
+│   │   ├── auth
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── loading.tsx
+│   │   └── page.tsx
+│   ├── components
+│   │   ├── login-form.tsx
+│   │   ├── mode-toggle.tsx
+│   │   ├── navbar.tsx
+│   │   ├── register-form.tsx
+│   │   ├── theme-provider.tsx
+│   │   └── ui
+│   ├── components.json
+│   ├── lib
+│   │   └── utils.ts
+│   ├── next-env.d.ts
+│   ├── next.config.mjs
+│   ├── node_modules
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.js
+│   ├── public
+│   ├── tailwind.config.ts
+│   └── tsconfig.json
 ├── infra
 │   └── k8s
+│       ├── auth-db-manager.yaml
+│       ├── auth-manager.yaml
+│       ├── frontend-manager.yaml
 │       ├── ingress-service.yaml
 │       ├── init-sql.yaml
 │       ├── postgres-manager.yaml
@@ -61,10 +103,10 @@ The project is structured as follows:
 │       ├── rag_uploader_manager.yaml
 │       ├── redis-manager.yaml
 │       └── secrets.yaml
-├── query_preprocessing_service
+├── query_preprocessing
 │   ├── Dockerfile
 │   ├── requirements.txt
-│   ├── src
+│   └── src
 │       ├── __init__.py
 │       ├── app.py
 │       ├── chat_summary_manager.py
@@ -84,6 +126,7 @@ The project is structured as follows:
 │       ├── __init__.py
 │       ├── app.py
 │       └── vector_store_manager.py
+├── skaffold
 └── skaffold.yaml
 ```
 
@@ -103,12 +146,15 @@ To set up and run this project locally, follow these steps:
    - Create a `secrets.yaml` file in the `infra/k8s` directory with your Google API key:
      ```yaml
      apiVersion: v1
-     kind: Secret
-     metadata:
-       name: google-secret
-     type: Opaque
-     stringData:
-       GOOGLE_API_KEY: <your-api-key>
+      kind: Secret
+      metadata:
+         name: medbot-secret
+      type: Opaque
+      stringData:
+         GOOGLE_API_KEY: <your-api-key>
+         SECRET_KEY: <secret-to-sign-jwt>
+         ALGORITHM: <algo-to-use-for-jwt>
+         ACCESS_TOKEN_EXPIRE_MINUTES: <access-token-expiry-time>
      ```
    - Replace `my docker hub id` with your Docker Hub ID in `skaffold.yaml`, `query-preprocessing-manager.yaml`, `question_answer_manager.yaml`, and `rag_uploader_manager.yaml`. For example:
      ```yaml
@@ -125,6 +171,7 @@ To set up and run this project locally, follow these steps:
      skaffold dev
      ```
 6. **Access the Services:**
+   - The frontend can be accessed from `medbot.xyz`.
    - The chat API can be accessed at `medbot.xyz/api/chat/docs`.
    - Document upload service is available at `medbot.xyz/api/rag/docs`.
 
