@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta,timezone
-from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException, Request,status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
@@ -26,11 +25,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 def get_current_user(request:Request):
     jwt_token = request.cookies.get("jwt")
     if jwt_token is None:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     try:
         payload = jwt.decode(jwt_token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     return UserBase(user_name=payload.get("sub"),email=payload.get("email"),user_level=payload.get("user_level"))
 
 

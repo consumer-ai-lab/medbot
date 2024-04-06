@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends,status
+from fastapi import APIRouter,Depends,status,HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from ..database.schemas import SignInUser,UserBase
@@ -18,12 +18,12 @@ async def sign_in_user(
 ):
     # check if user exists
     db_user = db.query(User).filter(User.email==user.email).first()
-    if not user:
-        return {"message":"User does not exist"}
+    if not db_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
     # check if password match
     if not verify_password(user.password,db_user.hashed_password):
-        return {"message":"Invalid password"}
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     
     # create jwt
     encoded_jwt=create_access_token(data={"sub":db_user.user_name, "email": db_user.email, "user_level": db_user.user_level})
