@@ -43,17 +43,17 @@ def get_ai_message(query: ApiQuery):
     summary = summary_manager.summarize_chats(
         history=chat_history
     )
-    # print(dir(query), query.dict(), QaQuery(**(query.dict() | {"summary": summary})).json())
-    # return summary
-    print(summary)
+
+    qa_query = QaQuery(**(query.dict() | {"summary": summary}))
+    if not summary_manager.check_if_fine(qa_query):
+        return { "error": "not related to medical stuff" }
+
     try:
         response = requests.post(
-            "http://qa-service:8000/get-ai-response", json=QaQuery(**(query.dict() | {"summary": summary})).dict()
+            "http://qa-service:8000/get-ai-response", json=qa_query.dict()
         )
         response.raise_for_status()
-        print("hehe")
         ai_response = response.json()
-        print(ai_response)
     except requests.exceptions.RequestException as e:
         chat_manager.add_message(Message(role=MessageRole.user, content=query.question))
         return {"error": f"Request to qa_service failed: {e}"}
