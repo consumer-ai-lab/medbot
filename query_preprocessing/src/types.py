@@ -49,7 +49,7 @@ class QaQuery(pydantic.BaseModel):
 
 class QaResponse(pydantic.BaseModel):
     class Type(str, enum.Enum):
-        ERROR = "ERROR"
+        # ERROR = "ERROR"
         OK = "OK"
         REJECTED = "REJECTED"
 

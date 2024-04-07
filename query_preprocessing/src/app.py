@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import requests
@@ -79,7 +79,8 @@ def get_ai_message(query: ApiQuery) -> QaResponse:
         response.raise_for_status()
         ai_response = response.json()
     except requests.exceptions.RequestException as e:
-        return QaResponse(**{"type": QaResponse.Type.ERROR, "response": e})
+        # return QaResponse(**{"type": QaResponse.Type.ERROR, "response": e})
+        return HTTPException(status_code=418, detail=e)
     else:
         chat_manager.add_message(
             query.thread_id,
