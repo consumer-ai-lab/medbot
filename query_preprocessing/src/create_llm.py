@@ -2,13 +2,12 @@ from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAI
 import os
 from dotenv import load_dotenv, find_dotenv
 
-load_dotenv(find_dotenv())
+from .types import Model
 
+load_dotenv(find_dotenv())
 
 class CreateLLM:
     def __init__(self, model, temp=0):
-        from .chat_summary_manager import Model
-
         match model:
             case Model.gemini_pro:
                 self.llm = GoogleGenerativeAI(
@@ -23,7 +22,3 @@ class CreateLLM:
                 )
             case _:
                 raise RuntimeError(message="Wrong llm name")
-
-    @staticmethod
-    def get_llm(model, temp=0):
-        return CreateLLM(model, temp)

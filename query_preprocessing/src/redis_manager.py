@@ -1,42 +1,65 @@
+# from jose import JWTError, jwt
+# from fastapi import HTTPException, Request, status
+
 import redis
-import json
-import enum
-import pydantic
 from typing import List
+import os
 
+from .types import Message, ChatThread
 
-class MessageRole(str, enum.Enum):
-    user = "user"
-    assistant = "assistant"
+# SECRET_KEY=os.getenv("SECRET_KEY")
+# ALGORITHM=os.getenv("ALGORITHM")
+# ACCESS_TOKEN_EXPIRE_MINUTES=os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
-class Message(pydantic.BaseModel):
-    role: MessageRole
-    content: str
-
+# def get_current_user(request: Request):
+#     jwt_token = request.cookies.get("jwt")
+#     if jwt_token is None:
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+#     try:
+#         payload = jwt.decode(jwt_token, SECRET_KEY, algorithms=[ALGORITHM])
+#     except JWTError:
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+#     return payload.get("user_id")
 
 class RedisManager:
-    def __init__(self, session_id: str, redis_url, redis_port, chats_life_time):
-        self.history = redis.Redis(
+    def __init__(self, user_id: str, redis_url, redis_port, chats_life_time):
+        self.redis = redis.Redis(
             host=redis_url, port=redis_port, decode_responses=True
         )
-        self.user_session_id = session_id
+        self.user_id = user_id
         self.chats_life_time = chats_life_time
 
     @property
     def key(self):
-        return "message_store:" + self.user_session_id
+        return "message_store:" + self.user_id
 
-    def add_message(self, message: Message):
-        self.history.lpush(self.key, message.json())
+    def thread_key(self, thread_id: str):
+        return f"{self.key}/{thread_id}"
+
+    def add_message(self, thread_id: str, message: Message):
+        key = self.thread_key(thread_id)
+        self.redis.lpush(key, message.json())
         if self.chats_life_time:
-            self.history.expire(self.key, self.chats_life_time)
+            self.redis.expire(self.key, self.chats_life_time)
 
     def delete_chats(self):
-        self.history.delete(self.key)
+        self.redis.delete(self.key)
 
-    def get_messages(self) -> List[Message]:
-        messages = self.history.lrange(self.key, 0, -1)
+    def get_chat(self, thread_id: str) -> List[Message]:
+        key = self.thread_key(thread_id)
+        messages = self.redis.lrange(key, 0, -1)
         return [] if messages is None else list(map(Message.model_validate_json, messages))[::-1]
+
+    def get_threads(self) -> List[ChatThread]:
+        threads = self.redis.lrange(self.key, 0, -1)
+        return [] if threads is None else list(map(ChatThread.model_validate_json, threads))[::-1]
+
+    def has_thread(self, thread_id: str) -> bool:
+        key = self.thread_key(thread_id)
+        return self.redis.exists(key)
+
+    def add_thread(self, thread: ChatThread):
+        self.redis.lpush(self.key, thread.json())
 
 def get_redis_manager(
     session_id: str,

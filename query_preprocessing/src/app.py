@@ -2,16 +2,27 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import requests
-from .redis_manager import get_redis_manager, Message, MessageRole
-from .chat_summary_manager import get_chat_summary_manager, Model, Query
-from pydantic import BaseModel
 import google.generativeai as genai
 from langchain.prompts import PromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from dotenv import find_dotenv, load_dotenv
-from .gaurdrails import GuardRails
+from typing import List
+
+from .gaurdrails import is_relevent
+from .types import (
+    ApiQuery,
+    QaQuery,
+    QaResponse,
+    Message,
+    MessageRole,
+    ChatThread,
+    ApiThreadQuery,
+)
+from .redis_manager import get_redis_manager
+from .chat_summary_manager import get_chat_summary_manager
+from .create_llm import CreateLLM
 
 load_dotenv(find_dotenv())
 # genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
@@ -26,42 +37,40 @@ app.add_middleware(
 )
 
 
-class ApiQuery(BaseModel):
-    user_id: str
-    thread_id: str
-    model: Model
-    question: str
-
-    def id(self) -> str:
-        return f"{self.user_id}/{self.thread_id}"
-
-class QaQuery(BaseModel):
-    model: Model
-    question: str
-    summary: str
-
 @app.get("/")
 def root():
     return {"message": "hello from query_preprocessing_service"}
 
+
 @app.post("/generate")
-def get_ai_message(query: ApiQuery):
-    grails = GuardRails(query.question)
-    response = grails.is_relevent()
-    if response["is_relevant"] == "NO" or response["is_relevant"] == "ILLEGAL":
-        return {"ai_response": response["ai_response"]}
+def get_ai_message(query: ApiQuery) -> QaResponse:
+    llm = CreateLLM(query.model).llm
 
-    chat_manager = get_redis_manager(query.id())
-    chat_history = chat_manager.get_messages()
-    summary_manager = get_chat_summary_manager(query.model, temperature=0.2)
+    chat_manager = get_redis_manager(query.user_id)
+    if not chat_manager.has_thread(query.thread_id):
+        # TODO: get the llm to generate a title
+        chat_manager.add_thread(
+            ChatThread(id=query.thread_id, title="hehe default title")
+        )
 
-    summary = summary_manager.summarize_chats(
-        history=chat_history
+    chat_history = chat_manager.get_chat(query.thread_id)
+
+    chat_manager.add_message(
+        query.thread_id, Message(role=MessageRole.user, content=query.question)
     )
 
+    summary_manager = get_chat_summary_manager(query.model, temperature=0.2)
+
+    summary = summary_manager.summarize_chats(history=chat_history)
+
     qa_query = QaQuery(**(query.dict() | {"summary": summary}))
-    # if not summary_manager.check_if_fine(qa_query):
-    #     return { "error": "not related to medical stuff" }
+    if not is_relevent(llm, qa_query):
+        return QaResponse(
+            **{
+                "type": QaResponse.QaResponseType.REJECTED,
+                "response": "not related to medical stuff",
+            }
+        )
 
     try:
         response = requests.post(
@@ -70,12 +79,33 @@ def get_ai_message(query: ApiQuery):
         response.raise_for_status()
         ai_response = response.json()
     except requests.exceptions.RequestException as e:
-        chat_manager.add_message(Message(role=MessageRole.user, content=query.question))
-        return {"error": f"Request to qa_service failed: {e}"}
+        return QaResponse(**{"type": QaResponse.QaResponseType.ERROR, "response": e})
     else:
-        chat_manager.add_message(Message(role=MessageRole.user, content=query.question))
-        chat_manager.add_message(Message(role=MessageRole.assistant, content=ai_response.get("ai_response")))
-        return {"ai_response": ai_response.get("ai_response")}
+        chat_manager.add_message(
+            query.thread_id,
+            Message(role=MessageRole.assistant, content=ai_response.get("ai_response")),
+        )
+        return QaResponse(
+            **{
+                "type": QaResponse.QaResponseType.OK,
+                "response": ai_response.get("ai_response"),
+            }
+        )
+
+
+@app.post("/get-threads")
+def threads(user_id: str) -> List[ChatThread]:
+    chat_manager = get_redis_manager(user_id)
+    threads = chat_manager.get_threads()
+    return threads
+
+
+@app.post("/thread")
+def thread(query: ApiThreadQuery) -> List[Message]:
+    chat_manager = get_redis_manager(query.user_id)
+    chat_history = chat_manager.get_chat(query.thread_id)
+    return chat_history
+
 
 ## I will test it when frontend is ready, till then donot use
 

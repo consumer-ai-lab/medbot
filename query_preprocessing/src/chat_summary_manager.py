@@ -14,9 +14,8 @@ import pydantic
 from typing import List
 import json
 
-from .redis_manager import Message, MessageRole
-
 from .create_llm import CreateLLM
+from .types import Model, Message, MessageRole
 
 set_debug(True)
 
@@ -34,24 +33,6 @@ summarization_prompt_template = ChatPromptTemplate.from_messages(
         ),
     ]
 )
-
-class Model(str, enum.Enum):
-    gemini_pro_chat = "gemini-pro-chat"
-    gemini_pro = "gemini-pro"
-    llama2 = "llama2"
-    llama2_uncensored = "llama2-uncensored"
-
-    def model(self):
-        match self:
-            case Model.gemini_pro_chat:
-                return "gemini-pro"
-            case _:
-                return self.value
-
-
-class Query(pydantic.BaseModel):
-    question: str
-    model: Model
 
 
 def summary_chain(llm):
@@ -85,7 +66,6 @@ def summary_chain(llm):
     return RunnableLambda(get_summary)
 
 
-
 class ChatSummaryManager:
     def __init__(self, model, temperature, llm):
         self.model = model
@@ -96,10 +76,9 @@ class ChatSummaryManager:
         chain = summary_chain(self.llm)
         return chain.invoke({"history": history})
 
+
 def get_chat_summary_manager(
     model: Model, temperature: float = 0.5
 ) -> ChatSummaryManager:
-    llm = CreateLLM(
-        model=model, temp=temperature
-    ).llm
+    llm = CreateLLM(model=model, temp=temperature).llm
     return ChatSummaryManager(model=model, temperature=temperature, llm=llm)
