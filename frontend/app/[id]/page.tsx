@@ -2,7 +2,6 @@
 
 import { ChatLayout } from '@/components/chat/chat-layout'
 import { getSelectedModel } from '@/lib/model-helper'
-import { ChatOllama } from '@langchain/community/chat_models/ollama'
 import { useChat } from 'ai/react'
 import React from 'react'
 import { toast } from 'sonner'
@@ -32,8 +31,6 @@ export default function Page({ params }: { params: { id: string } }) {
   const [selectedModel, setSelectedModel] = React.useState<string>(
     getSelectedModel(),
   )
-  const [ollama, setOllama] = React.useState<ChatOllama>()
-  const env = process.env.NODE_ENV
   const [loadingSubmit, setLoadingSubmit] = React.useState(false)
 
   React.useEffect(() => {

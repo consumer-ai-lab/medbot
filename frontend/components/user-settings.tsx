@@ -1,65 +1,60 @@
-"use client";
+'use client'
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu'
 
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { GearIcon } from "@radix-ui/react-icons";
-import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
-import { Skeleton } from "./ui/skeleton";
-import { set } from "zod";
-import UsernameForm from "./username-form";
-import EditUsernameForm from "./edit-username-form";
-import PullModel from "./pull-model";
+} from '@/components/ui/dialog'
+import { GearIcon } from '@radix-ui/react-icons'
+import { useEffect, useState } from 'react'
+import { SettingsModal } from './settings-modal'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { Button } from './ui/button'
+import { Skeleton } from './ui/skeleton'
 
 export default function UserSettings() {
-  const [name, setName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     const handleStorageChange = () => {
-      const username = localStorage.getItem("ollama_user");
+      // TODO: get user name from auth values
+      const username = localStorage.getItem('user_name')
       if (username) {
-        setName(username);
-        setIsLoading(false);
+        setName(username)
+        setIsLoading(false)
       }
-    };
+    }
 
     const fetchData = () => {
-      const username = localStorage.getItem("ollama_user");
+      // TODO: get user name from auth values
+      const username = localStorage.getItem('user_name')
       if (username) {
-        setName(username);
-        setIsLoading(false);
+        setName(username)
+        setIsLoading(false)
       }
-    };
+    }
 
     // Initial fetch
-    fetchData();
+    fetchData()
 
     // Listen for storage changes
-    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener('storage', handleStorageChange)
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
+      window.removeEventListener('storage', handleStorageChange)
+    }
+  }, [])
 
   return (
     <DropdownMenu>
@@ -84,15 +79,12 @@ export default function UserSettings() {
             {isLoading ? (
               <Skeleton className="w-20 h-4" />
             ) : (
-              name || "Anonymous"
+              name || 'Anonymous'
             )}
           </div>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-48 p-2">
-      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <PullModel />
-          </DropdownMenuItem>
         <Dialog>
           <DialogTrigger className="w-full">
             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -105,13 +97,12 @@ export default function UserSettings() {
           <DialogContent>
             <DialogHeader className="space-y-4">
               <DialogTitle>Settings</DialogTitle>
-              <EditUsernameForm setOpen={setOpen} />
+              <SettingsModal setOpen={setOpen} />
             </DialogHeader>
           </DialogContent>
         </Dialog>
-        <Dialog>
-        </Dialog>
+        <Dialog></Dialog>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }
