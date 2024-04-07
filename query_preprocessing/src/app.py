@@ -67,7 +67,7 @@ def get_ai_message(query: ApiQuery) -> QaResponse:
     if not is_relevent(llm, qa_query):
         return QaResponse(
             **{
-                "type": QaResponse.QaResponseType.REJECTED,
+                "type": QaResponse.Type.REJECTED,
                 "response": "not related to medical stuff",
             }
         )
@@ -79,7 +79,7 @@ def get_ai_message(query: ApiQuery) -> QaResponse:
         response.raise_for_status()
         ai_response = response.json()
     except requests.exceptions.RequestException as e:
-        return QaResponse(**{"type": QaResponse.QaResponseType.ERROR, "response": e})
+        return QaResponse(**{"type": QaResponse.Type.ERROR, "response": e})
     else:
         chat_manager.add_message(
             query.thread_id,
@@ -87,7 +87,7 @@ def get_ai_message(query: ApiQuery) -> QaResponse:
         )
         return QaResponse(
             **{
-                "type": QaResponse.QaResponseType.OK,
+                "type": QaResponse.Type.OK,
                 "response": ai_response.get("ai_response"),
             }
         )
