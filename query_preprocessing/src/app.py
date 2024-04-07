@@ -50,7 +50,7 @@ def get_ai_message(query: ApiQuery) -> QaResponse:
     if not chat_manager.has_thread(query.thread_id):
         # TODO: get the llm to generate a title
         chat_manager.add_thread(
-            ChatThread(id=query.thread_id, title="hehe default title")
+            ChatThread(id=query.thread_id, title=query.question)
         )
 
     chat_history = chat_manager.get_chat(query.thread_id)
