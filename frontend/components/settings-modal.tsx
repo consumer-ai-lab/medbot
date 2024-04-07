@@ -1,5 +1,6 @@
 'use client'
 
+import { Model } from '@/Model'
 import { Form } from '@/components/ui/form'
 import {
   Select,
@@ -15,10 +16,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from './ui/button'
 
-// TODO: Setup models and architechture from here
-
-const models = ['gemini', 'chatgpt']
-
+const models = Object.values(Model)
 const formSchema = z.object({
   model: z.string().min(2, {
     message: 'Name must be at least 2 characters.',
@@ -33,19 +31,19 @@ export function SettingsModal({ setOpen }: EditUsernameFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      model: 'gemini',
+      model: models[0],
     },
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values)
     localStorage.setItem('selectedModel', values.model)
     window.dispatchEvent(new Event('storage'))
     toast.success('Updated successfully')
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault()
-    form.setValue('model', e.currentTarget.value)
+  const handleChange = (value: string) => {
+    form.setValue('model', value)
   }
 
   return (
@@ -54,33 +52,9 @@ export function SettingsModal({ setOpen }: EditUsernameFormProps) {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 pt-4"
       >
-        {/* <FormField
-          control={form.control}
-          name=""
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <div className="md:flex gap-4">
-                  <Input
-                    {...field}
-                    type="text"
-                    value={name}
-                    onChange={(e) => handleChange(e)}
-                  />
-                  <Button type="submit">Change name</Button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        /> */}
-        <Select>
+        <Select onValueChange={handleChange}>
           <SelectTrigger>
-            <SelectValue
-              placeholder="Select Model"
-              onChange={handleChange}
-            />
+            <SelectValue placeholder="Select Model" />
           </SelectTrigger>
           <SelectContent>
             {models.map((model) => {
