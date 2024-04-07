@@ -80,7 +80,7 @@ def get_ai_message(query: ApiQuery) -> QaResponse:
         ai_response = response.json()
     except requests.exceptions.RequestException as e:
         # return QaResponse(**{"type": QaResponse.Type.ERROR, "response": e})
-        return HTTPException(status_code=418, detail=e)
+        raise HTTPException(status_code=418, detail=e)
     else:
         chat_manager.add_message(
             query.thread_id,
