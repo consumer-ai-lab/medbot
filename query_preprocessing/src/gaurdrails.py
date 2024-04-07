@@ -12,7 +12,7 @@ load_dotenv(find_dotenv())
 
 # TODO: maybe fuse both these prompt
 guard_prompt = """
-System: you are an AI. your job is to check if the given prompt is related to medical info in any way. DO NOT answer the query. you must output it in json format. {{{{ "related": "NO", "reason": <INSERT REASONING HERE> }}}} or {{{{ "related": "YES", "reason": <INSERT REASONING HERE> }}}}
+System: you are an AI. your job is to check if the given prompt is related to medical or health related info in any way. DO NOT answer the query. you must output it in json format. {{{{ "related": "NO", "reason": <INSERT REASONING HERE> }}}} or {{{{ "related": "YES", "reason": <INSERT REASONING HERE> }}}}
 
 Context: user tells AI that they fell on their knee on a playground and hurt themselves.
 Prompt: How do i treat it?
@@ -21,6 +21,10 @@ Output: {{{{ "related": "YES", "reason": "user wants to know how to treat a knee
 Context: user tells AI they they have cough.
 Prompt: How do i complete the first level of mario?
 Output: {{{{ "related": "NO", "reason": "user want information about mario. not related to any medical context" }}}}
+
+Context: None
+Prompt: How do i eat a cabbage?
+Output: {{{{ "related": "NO", "reason": "user want information about eating cabbage. not related to any medical context" }}}}
 
 Context: {context}
 Prompt: {prompt}
@@ -81,7 +85,7 @@ def guard_chain2(llm):
         RunnableParallel(prompt=lambda x: x["question"])
         | RunnableLambda(
             lambda x: PromptTemplate(
-                template=guard_prompt_template.invoke(x).to_string(),
+                template=guard_prompt2_template.invoke(x).to_string(),
                 input_variables=[],
             ).invoke({})
         )

@@ -93,11 +93,46 @@ chatbot_with_history_promt_template = PromptTemplate(
 )
 
 chatbot_prompt = """
-Context: {context}
+### System:
+provided the context and a question, answer it using the given context. you may offer medical advice. do not deviate from the given context. when context is not related to the question, just say that the context does not have the answer to the question.
 
-Question: {question}
+### Context:
+<INFO ABOUT COWS>
 
-System: provided the context and a question, answer it using the given context. you may offer medical advice. do not deviate from the given context. when context is not related to the question, just say that the context does not have the answer to the question.
+### Question:
+How many legs do cows have?
+
+### AI:
+Cows have 4 legs.
+
+
+### Context:
+<INFO ABOUT DOGS>
+
+### Question:
+Are cats mammals?
+
+### AI:
+Context does not have any information about cats.
+
+
+### Context:
+[]
+
+### Question:
+Are cats mammals?
+
+### AI:
+No context provided
+
+
+### Context:
+{context}
+
+### Question:
+{question}
+
+### AI:
 """
 chatbot_promt_template = PromptTemplate(
     template=chatbot_prompt, input_variables=["context", "question"]
@@ -106,13 +141,33 @@ chatbot_promt_template = PromptTemplate(
 question_rephrase_prompt = """
 System: you are an AI. your job is to rephrase the question given below with given context (if required) such that it is possible to answer it without any context. do not change the meaning of question. write the question as if it was written by the user. DO NOT answer the question. just rephrase it.
 
-Context: user and ai are talking about mountains.
-Question: what is it?
-Rephrased Question: What is a mountain?
+Context:
+user and ai are talking about mountains.
 
-Context: {summary}
-Question: {question}
-Rephrased Question: 
+Question:
+what is it?
+
+Rephrased Question:
+What is a mountain?
+
+
+Context:
+None
+
+Question:
+What is fractal?
+
+Rephrased Question:
+What are Fractals?
+
+
+Context:
+{summary}
+
+Question:
+{question}
+
+Rephrased Question:
 """
 question_rephrase_prompt_template = PromptTemplate(
     template=question_rephrase_prompt, input_variables=["summary", "question"]
@@ -147,6 +202,7 @@ generic_chatbot_promt_template = PromptTemplate(
 )
 
 class Model(str, enum.Enum):
+    gemini_pro_chat = "gemini-pro-chat"
     gemini_pro = "gemini-pro"
     llama2 = "llama2"
     llama2_uncensored = "llama2-uncensored"
