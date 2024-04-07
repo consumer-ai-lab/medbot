@@ -13,20 +13,20 @@ spec:
         app: query-preprocessing
     spec:
       containers:
-      - name: query-preprocessing
-        image: adityabhattad/query-preprocessing
-        # resources:
-        #   limits:
-        #     memory: "128Mi"
-        #     cpu: "500m"
-        env:
-          - name: GOOGLE_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: medbot-secret
-                key: GOOGLE_API_KEY
-          - name: REDIS_HOST
-            value: redis-service
+        - name: query-preprocessing
+          image: adnantd/query-preprocessing
+          # resources:
+          #   limits:
+          #     memory: "128Mi"
+          #     cpu: "500m"
+          env:
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: GOOGLE_API_KEY
+            - name: REDIS_HOST
+              value: redis-service
 ---
 apiVersion: v1
 kind: Service
@@ -41,4 +41,3 @@ spec:
       protocol: TCP
       port: 8000
       targetPort: 80
-

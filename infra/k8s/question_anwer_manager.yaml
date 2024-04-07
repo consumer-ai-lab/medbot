@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: question-answer
-          image: adityabhattad/question-answer
+          image: adnantd/question-answer
           # resources:
           #   limits:
           #     memory: "128Mi"

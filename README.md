@@ -32,17 +32,16 @@ The architecture comprises five pods, each hosting specific components:
 - **Authentication Service**: Manages Authentication for the microservices.
 - **Vector Database Management Service**: Manages the addition and removal of data from the vector database.
 - **Query Preprocessing Service**: Acts as the chat service's entry point. This service performs multiple functions:
-   - Fetches the chat history for the ongoing session.
-   - Summarizes the chat history using LLM.
-   - Uses the latest query and the chat summary to generate a single consolidated query using LLM.
-   - The newly generated query is then passed to **question answer service**.
-   - Once the **question answer service** returns a response, the new message exchange between AI and the user is saved to redis.
-   - Finally the response is returned back to the client.
+  - Fetches the chat history for the ongoing session.
+  - Summarizes the chat history using LLM.
+  - Uses the latest query and the chat summary to generate a single consolidated query using LLM.
+  - The newly generated query is then passed to **question answer service**.
+  - Once the **question answer service** returns a response, the new message exchange between AI and the user is saved to redis.
+  - Finally the response is returned back to the client.
 - **Question and Answer Service**: When received a query from **query preprocessing service**:
-   - Similarity search is performed on the query.
-   - The relevant content is fetched from the vector database.
-   - The document is then passed to LLM as a context with the original query, The generated response from the LLM is passed back to the **query proprocessing service**.
-    
+  - Similarity search is performed on the query.
+  - The relevant content is fetched from the vector database.
+  - The document is then passed to LLM as a context with the original query, The generated response from the LLM is passed back to the **query proprocessing service**.
 
 ## Folder Structure
 
@@ -135,6 +134,7 @@ The project is structured as follows:
 To set up and run this project locally, follow these steps:
 
 1. **Prerequisites:**
+
    - Ensure Docker and Kubernetes are installed on your system.
 
 2. **Set Up Skaffold:**
@@ -155,50 +155,52 @@ To set up and run this project locally, follow these steps:
      ```
    - Replace `my docker hub id` with your Docker Hub ID in `skaffold.yaml`, `query-preprocessing-manager.yaml`, `question_answer_manager.yaml`, and `rag_uploader_manager.yaml`. For example:
      ```yaml
-     adityabhattad/query-preprocessing => <your-name>/query-processing
+     adnantd/query-preprocessing => <your-name>/query-processing
      ```
 
 **Linux**
+
 1. **Install minikube:**
    - Go to following link to download minikube
-      ```text
-      https://minikube.sigs.k8s.io/docs/start/
-      ```
+     ```text
+     https://minikube.sigs.k8s.io/docs/start/
+     ```
 2. **Install skaffold:**
    - To install skaffold click on following link
-      ```text
-      https://skaffold.dev/docs/install/
-      ```
+     ```text
+     https://skaffold.dev/docs/install/
+     ```
 3. **Run the following commands:**
    - Start minikube
-      ```text
-      minikube start
-      minikube addons enable ingress
-      minikube addons enable ingress-dns
-      ```
+     ```text
+     minikube start
+     minikube addons enable ingress
+     minikube addons enable ingress-dns
+     ```
 4. **Host File Entry:**
    - Run following commands
-      1. To fetch ip address run the following command
-      ```text
-      minikube ip
-      ```
-      2. Copy your ip address
-      ```text
-      <your-ip-address>
-      ```
-      3. Run following command
-      ```text
-      sudo nano /etc/hosts
-      ```
-      4. Add this to your host file
-      ```
-      <your-ip-address> medbot.xyz
-      ```
-      5. Save file and exit and go to your project directory
-      ```text
-      ctrl/cmd + x && y
-      ```
+     1. To fetch ip address run the following command
+     ```text
+     minikube ip
+     ```
+     2. Copy your ip address
+     ```text
+     <your-ip-address>
+     ```
+     3. Run following command
+     ```text
+     sudo nano /etc/hosts
+     ```
+     4. Add this to your host file
+     ```
+     <your-ip-address> medbot.xyz
+     ```
+     5. Save file and exit and go to your project directory
+     ```text
+     ctrl/cmd + x && y
+     ```
 5. **Start the Application:**
+
    - Navigate to the root directory of the project and run:
      ```shell
      skaffold dev
@@ -207,9 +209,10 @@ To set up and run this project locally, follow these steps:
 6. **Access the Services:**
    - The frontend can be accessed from `medbot.xyz`.
    - The chat API can be accessed at `medbot.xyz/api/chat/docs`.
-   - Document upload service is available at `medbot.xyz/api/rag/docs`.   
+   - Document upload service is available at `medbot.xyz/api/rag/docs`.
 
 **Windows**
+
 1. **Host File Entry:**
    - Add the following entry to your host file to route local requests:
      ```text

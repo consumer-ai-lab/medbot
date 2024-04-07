@@ -15,17 +15,22 @@ spec:
       initContainers:
         - name: wait-for-db
           image: postgres:latest
-          command: ['sh', '-c', 'until pg_isready -h auth-db-service -p 5432; do echo waiting for database; sleep 2; done;']
+          command:
+            [
+              'sh',
+              '-c',
+              'until pg_isready -h auth-db-service -p 5432; do echo waiting for database; sleep 2; done;',
+            ]
       containers:
         - name: auth
-          image: adityabhattad/auth
+          image: adnantd/auth
           resources:
             limits:
-              memory: "500Mi"
-              cpu: "2000m"
+              memory: '500Mi'
+              cpu: '2000m'
             requests:
-              memory: "128Mi"
-              cpu: "500m"
+              memory: '128Mi'
+              cpu: '500m'
           env:
             - name: SECRET_KEY
               valueFrom:

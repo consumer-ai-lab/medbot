@@ -13,13 +13,13 @@ spec:
         app: rag-uploader
     spec:
       containers:
-      - name: rag-uploader
-        image: adityabhattad/rag-uploader
-        # resources:
-        #   limits:
-        #     memory: "128Mi"
-        #     cpu: "500m"
-        env:
+        - name: rag-uploader
+          image: adnantd/rag-uploader
+          # resources:
+          #   limits:
+          #     memory: "128Mi"
+          #     cpu: "500m"
+          env:
             - name: GOOGLE_API_KEY
               valueFrom:
                 secretKeyRef:
