@@ -11,9 +11,12 @@ import {
 import UsernameForm from '@/components/username-form'
 import { getSelectedModel } from '@/lib/model-helper'
 import { useChat } from 'ai/react'
+import axios from 'axios'
 import React from 'react'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
+import { Model } from '../Model'
+import { ApiQuery } from '../types'
 
 export default function Home() {
   const {
@@ -46,8 +49,6 @@ export default function Home() {
 
   React.useEffect(() => {
     if (!isLoading && !error && chatId && messages.length > 0) {
-      // Save messages to local storage
-      localStorage.setItem(`chat_${chatId}`, JSON.stringify(messages))
       // Trigger the storage event to update the sidebar component
       window.dispatchEvent(new Event('storage'))
     }
@@ -66,7 +67,15 @@ export default function Home() {
     e.preventDefault()
 
     addMessage({ role: 'user', content: input, id: chatId })
+    const body: ApiQuery = {
+      user_id: localStorage.getItem('user_name') || '',
+      model: selectedModel as Model,
+      question: input,
+      thread_id: chatId,
+    }
     setInput('')
+    const response = (await axios.post('/api/chat/generate', body)).data
+    console.log(response)
     addMessage({ role: 'assistant', content: 'Yohohohohooo', id: chatId })
 
     try {

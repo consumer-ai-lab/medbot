@@ -4,6 +4,7 @@ import { useLocalStorageData } from '@/app/hooks/useLocalStorageData'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Message } from 'ai/react'
+import axios from 'axios'
 import { MoreHorizontal, SquarePen, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -52,50 +53,55 @@ export function Sidebar({
       setSselectedChatId(chatId)
     }
 
-    setLocalChats(getLocalstorageChats())
-    const handleStorageChange = () => {
-      setLocalChats(getLocalstorageChats())
+    const handleStorageChange = async () => {
+      setLocalChats(await getLocalstorageChats())
     }
+    handleStorageChange()
     window.addEventListener('storage', handleStorageChange)
     return () => {
       window.removeEventListener('storage', handleStorageChange)
     }
   }, [])
 
-  const getLocalstorageChats = (): {
-    chatId: string
-    messages: Message[]
-  }[] => {
-    const chats = Object.keys(localStorage).filter((key) =>
-      key.startsWith('chat_'),
-    )
+  // TODO: Return threads and handle messages requirement
+  const getLocalstorageChats = async (): Promise<
+    {
+      chatId: string
+      messages: Message[]
+    }[]
+  > => {
+    try {
+      const chats = (
+        await axios.post('/api/chat/get-threads', {
+          user_id: localStorage.getItem('user_name') || '',
+        })
+      ).data
 
-    if (chats.length === 0) {
+      console.log(chats)
+      if (chats.length === 0) {
+        setIsLoading(false)
+      }
+    } catch (e) {
+      console.log('Sidebar fetch error occured')
+    } finally {
       setIsLoading(false)
     }
 
     // Map through the chats and return an object with chatId and messages
-    const chatObjects = chats.map((chat) => {
-      const item = localStorage.getItem(chat)
-      return item
-        ? { chatId: chat, messages: JSON.parse(item) }
-        : { chatId: '', messages: [] }
-    })
+    // const chatObjects = chats.map((chat) => {
+    //   const item = localStorage.getItem(chat)
+    //   return item
+    //     ? { chatId: chat, messages: JSON.parse(item) }
+    //     : { chatId: '', messages: [] }
+    // })
 
-    // Sort chats by the createdAt date of the first message of each chat
-    chatObjects.sort((a, b) => {
-      const aDate = new Date(a.messages[0].createdAt)
-      const bDate = new Date(b.messages[0].createdAt)
-      return bDate.getTime() - aDate.getTime()
-    })
-
-    setIsLoading(false)
-    return chatObjects
+    return []
   }
 
+  // TODO: Delete handler
   const handleDeleteChat = (chatId: string) => {
-    localStorage.removeItem(chatId)
-    setLocalChats(getLocalstorageChats())
+    // localStorage.removeItem(chatId)
+    // setLocalChats(await getLocalstorageChats())
   }
 
   return (

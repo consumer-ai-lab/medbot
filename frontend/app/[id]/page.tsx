@@ -3,8 +3,11 @@
 import { ChatLayout } from '@/components/chat/chat-layout'
 import { getSelectedModel } from '@/lib/model-helper'
 import { useChat } from 'ai/react'
+import axios from 'axios'
 import React from 'react'
 import { toast } from 'sonner'
+import { Model } from '../../Model'
+import { ApiQuery, ApiThreadQuery } from '../../types'
 
 export default function Page({ params }: { params: { id: string } }) {
   const {
@@ -34,12 +37,20 @@ export default function Page({ params }: { params: { id: string } }) {
   const [loadingSubmit, setLoadingSubmit] = React.useState(false)
 
   React.useEffect(() => {
-    if (params.id) {
-      const item = localStorage.getItem(`chat_${params.id}`)
-      if (item) {
-        setMessages(JSON.parse(item))
+    async function fetch_messages() {
+      if (params.id) {
+        const body: ApiThreadQuery = {
+          thread_id: params.id,
+          user_id: localStorage.getItem('user_name') || '',
+        }
+        const response = await axios.post('/api/chat/thread', body)
+        console.log(response)
+        if (response) {
+          // setMessages(response.data)
+        }
       }
     }
+    fetch_messages()
   }, [setMessages])
 
   const addMessage = (Message: any) => {
@@ -52,7 +63,15 @@ export default function Page({ params }: { params: { id: string } }) {
     e.preventDefault()
 
     addMessage({ role: 'user', content: input, id: chatId })
+    const body: ApiQuery = {
+      user_id: localStorage.getItem('user_name') || '',
+      model: selectedModel as Model,
+      question: input,
+      thread_id: chatId,
+    }
     setInput('')
+    const response = (await axios.post('/api/chat/generate', body)).data
+    console.log(response)
     addMessage({ role: 'assistant', content: 'Yohohohohooo', id: chatId })
 
     try {
