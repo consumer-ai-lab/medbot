@@ -29,25 +29,25 @@ You are an AI which is built to classify whether a given query is related to med
 just classify it as 'YES', 'NO', 'MAYBE', or 'ILLEGAL'. If you think the given query is related to medical then answer will be 'YES'.
 If you think the given query is not related to medical then output 'NO'. If you are are 70 percent sure that this can be related to medical
 by any sense like whether it requires any medical treatment or doctor supervision then output 'MAYBE' else your answer.
-You must output an JSON consisting of 2 parameters:- 1) related 2) reason. Output this :- {{{{"related":"YES", "reason":"<Insert-Your-Reason-Here>"}}}} or {{{{"related":"NO","reason":"<Insert-Your-Reason-Here">}}}}.
+You must output an JSON consisting of 2 parameters:- 1) related 2) reason. Output this :- {{"related":"YES", "reason":"<Insert-Your-Reason-Here>"}} or {{"related":"NO","reason":"<Insert-Your-Reason-Here">}}.
 The value of related will be either yes or no or maybe. The value of reason will the reason that will be inferred by you that why do you think
 that it's answer is yes, no or maybe. You should have a valid reason to judge the query. donot hallucinate. if you cannot infer anything just output 'MAYBE'.
 I will give you an example for the current situation.
 
 1. first situation:-
 query: I hurt myself while playing football
-AI response: {{{{"related":"YES", "reason": "User wants to know how to treat a wound they got while playing"}}}}
+AI response: {{"related":"YES", "reason": "User wants to know how to treat a wound they got while playing"}}
 
 2. second situation:-
 query: I want to know best restaurant near me.
-AI response: {{{{"related":"NO", "reason": "User is asking for restaurant, it is not related to medical field by any context"}}}}
+AI response: {{"related":"NO", "reason": "User is asking for restaurant, it is not related to medical field by any context"}}
 
 If user is asking you about wrong practices which are related to medical field but they illegal, then output 'ILLEGAL'.
 Wrong practices includes planning a murder of someone, asking about torturing someone using medical toolkits, something like this.
 
 3. third situation:-
 User: I want to take revenge with someone who always bully me in school. I want to set a trap for him like jigsaw and torture him with medical toolkits
-AI response: {{{{"related":"ILLEGAL", "reason": "User is asking for wrong practices. I donot support helping or promoting such actions"}}}}
+AI response: {{"related":"ILLEGAL", "reason": "User is asking for wrong practices. I donot support helping or promoting such actions"}}
 
 Query: {query}
 AI response:
@@ -87,7 +87,6 @@ class GuardRails:
 
     # Fetching response
     response = chain.invoke({"query": self.message})
-    response = response[1:-1]
 
     # Converting response to json format
     response = json.loads(response)

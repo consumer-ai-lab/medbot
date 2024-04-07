@@ -25,5 +25,5 @@ class CreateLLM:
                 raise RuntimeError(message="Wrong llm name")
 
     @staticmethod
-    def get_llm(model, llm_name, temp=0):
-        return CreateLLM(model, llm_name, temp)
+    def get_llm(model, temp=0):
+        return CreateLLM(model, temp)
