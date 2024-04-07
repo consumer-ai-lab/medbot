@@ -201,11 +201,13 @@ generic_chatbot_promt_template = PromptTemplate(
     template=generic_chatbot_prompt, input_variables=["context", "question"]
 )
 
+
 class Model(str, enum.Enum):
     gemini_pro_chat = "gemini-pro-chat"
     gemini_pro = "gemini-pro"
     llama2 = "llama2"
     llama2_uncensored = "llama2-uncensored"
+
 
 class ApiQuery(pydantic.BaseModel):
     model: Model
@@ -222,7 +224,13 @@ class QaService:
                 temperature=temperature,
             )
         elif model == Model.llama2 or model == Model.llama2_uncensored:
-            llm = Ollama(model=model.value + ":vram-34", temperature=temperature)
+            llm = Ollama(
+                base_url=os.getenv("OLLAMA_URL"),
+                system="",
+                template="",
+                model=model.value + ":vram-34",
+                temperature=temperature,
+            )
         else:
             raise RuntimeError("unknown llm")
 
@@ -245,7 +253,7 @@ class VectorDbQaService(QaService):
         self.db = PGVector(
             collection_name=collection_name,
             connection_string=connection_string,
-            embedding_function=embeddings
+            embedding_function=embeddings,
         )
 
     def qa_chain(self, model: Model):
@@ -253,7 +261,11 @@ class VectorDbQaService(QaService):
 
         return (
             RunnableParallel(
-                question=(question_rephrase_prompt_template | llm | StrOutputParser()),
+                question=(
+                    question_rephrase_prompt_template
+                    | llm
+                    | StrOutputParser()
+                ),
             )
             | RunnableParallel(
                 question=lambda x: x["question"],

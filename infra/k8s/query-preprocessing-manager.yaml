@@ -25,6 +25,11 @@ spec:
                 secretKeyRef:
                   name: medbot-secret
                   key: GOOGLE_API_KEY
+            - name: OLLAMA_URL
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: OLLAMA_URL
             - name: REDIS_HOST
               value: redis-service
 ---

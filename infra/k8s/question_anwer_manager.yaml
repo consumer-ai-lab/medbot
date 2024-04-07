@@ -25,6 +25,11 @@ spec:
                 secretKeyRef:
                   name: medbot-secret
                   key: GOOGLE_API_KEY
+            - name: OLLAMA_URL
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: OLLAMA_URL
             - name: CONNECTION_STRING
               value: 'postgresql+psycopg2://admin:admin@postgres-service:5432/vectordb'
             - name: CONNECTION_NAME
