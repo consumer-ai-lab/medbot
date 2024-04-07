@@ -70,29 +70,6 @@ export default function Home() {
     addMessage({ role: 'assistant', content: 'Yohohohohooo', id: chatId })
 
     try {
-      // const parser = new BytesOutputParser();
-
-      // const stream = await ollama
-      //   .pipe(parser)
-      //   .stream(
-      //     (messages as Message[]).map((m) =>
-      //       m.role == "user"
-      //         ? new HumanMessage(m.content)
-      //         : new AIMessage(m.content)
-      //     )
-      //   );
-
-      // const decoder = new TextDecoder();
-
-      // let responseMessage = "";
-      // for await (const chunk of stream) {
-      //   const decodedChunk = decoder.decode(chunk);
-      //   responseMessage += decodedChunk;
-      // }
-      // setMessages([
-      //   ...messages,
-      //   { role: "assistant", content: responseMessage, id: chatId },
-      // ]);
       setLoadingSubmit(false)
     } catch (error) {
       toast.error('An error occurred. Please try again.')

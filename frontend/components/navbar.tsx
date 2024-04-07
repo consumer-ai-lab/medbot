@@ -36,6 +36,7 @@ interface NavbarProps {
 export default function Navbar({ currentUser }: NavbarProps) {
   useEffect(() => {
     localStorage.setItem('user_name', currentUser?.user_name || 'Anonymous')
+    window.dispatchEvent(new Event('storage'))
   }, [currentUser])
   const router = useRouter()
 
