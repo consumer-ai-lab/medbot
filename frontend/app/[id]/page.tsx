@@ -3,11 +3,8 @@
 import { ChatLayout } from '@/components/chat/chat-layout'
 import { getSelectedModel } from '@/lib/model-helper'
 import { ChatOllama } from '@langchain/community/chat_models/ollama'
-import { AIMessage, HumanMessage } from '@langchain/core/messages'
-import { BytesOutputParser } from '@langchain/core/output_parsers'
-import { ChatRequestOptions } from 'ai'
-import { Message, useChat } from 'ai/react'
-import React, { useEffect } from 'react'
+import { useChat } from 'ai/react'
+import React from 'react'
 import { toast } from 'sonner'
 
 export default function Page({ params }: { params: { id: string } }) {
@@ -15,7 +12,6 @@ export default function Page({ params }: { params: { id: string } }) {
     messages,
     input,
     handleInputChange,
-    handleSubmit,
     isLoading,
     error,
     stop,
@@ -40,16 +36,6 @@ export default function Page({ params }: { params: { id: string } }) {
   const env = process.env.NODE_ENV
   const [loadingSubmit, setLoadingSubmit] = React.useState(false)
 
-  useEffect(() => {
-    if (env === 'production') {
-      const newOllama = new ChatOllama({
-        baseUrl: process.env.NEXT_PUBLIC_OLLAMA_URL || 'http://localhost:11434',
-        model: selectedModel,
-      })
-      setOllama(newOllama)
-    }
-  }, [selectedModel])
-
   React.useEffect(() => {
     if (params.id) {
       const item = localStorage.getItem(`chat_${params.id}`)
@@ -65,45 +51,18 @@ export default function Page({ params }: { params: { id: string } }) {
     setMessages([...messages])
   }
 
-  // Function to handle chatting with Ollama in production (client side)
-  const handleSubmitProduction = async (
-    e: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     addMessage({ role: 'user', content: input, id: chatId })
     setInput('')
+    addMessage({ role: 'assistant', content: 'Yohohohohooo', id: chatId })
 
-    if (ollama) {
-      try {
-        const parser = new BytesOutputParser()
-
-        const stream = await ollama
-          .pipe(parser)
-          .stream(
-            (messages as Message[]).map((m) =>
-              m.role == 'user'
-                ? new HumanMessage(m.content)
-                : new AIMessage(m.content),
-            ),
-          )
-
-        const decoder = new TextDecoder()
-
-        let responseMessage = ''
-        for await (const chunk of stream) {
-          const decodedChunk = decoder.decode(chunk)
-          responseMessage += decodedChunk
-        }
-        setMessages([
-          ...messages,
-          { role: 'assistant', content: responseMessage, id: chatId },
-        ])
-        setLoadingSubmit(false)
-      } catch (error) {
-        toast.error('An error occurred. Please try again.')
-        setLoadingSubmit(false)
-      }
+    try {
+      setLoadingSubmit(false)
+    } catch (error) {
+      toast.error('An error occurred. Please try again.')
+      setLoadingSubmit(false)
     }
   }
 
@@ -112,23 +71,7 @@ export default function Page({ params }: { params: { id: string } }) {
     setLoadingSubmit(true)
 
     setMessages([...messages])
-
-    // Prepare the options object with additional body data, to pass the model.
-    const requestOptions: ChatRequestOptions = {
-      options: {
-        body: {
-          selectedModel: selectedModel,
-        },
-      },
-    }
-
-    if (env === 'production' && selectedModel !== 'REST API') {
-      handleSubmitProduction(e)
-    } else {
-      // use the /api/chat route
-      // Call the handleSubmit function with the options
-      handleSubmit(e, requestOptions)
-    }
+    handleSubmit(e)
   }
 
   // When starting a new chat, append the messages to the local storage

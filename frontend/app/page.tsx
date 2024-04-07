@@ -1,32 +1,25 @@
-"use client";
+'use client'
 
-import { ChatLayout } from "@/components/chat/chat-layout";
-import { Button } from "@/components/ui/button";
+import { ChatLayout } from '@/components/chat/chat-layout'
 import {
   Dialog,
+  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogContent,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import UsernameForm from "@/components/username-form";
-import { getSelectedModel } from "@/lib/model-helper";
-import { ChatOllama } from "@langchain/community/chat_models/ollama";
-import { AIMessage, HumanMessage } from "@langchain/core/messages";
-import { BytesOutputParser } from "@langchain/core/output_parsers";
-import { ChatRequestOptions } from "ai";
-import { Message, useChat } from "ai/react";
-import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
+} from '@/components/ui/dialog'
+import UsernameForm from '@/components/username-form'
+import { getSelectedModel } from '@/lib/model-helper'
+import { useChat } from 'ai/react'
+import React from 'react'
+import { toast } from 'sonner'
+import { v4 as uuidv4 } from 'uuid'
 
 export default function Home() {
   const {
     messages,
     input,
     handleInputChange,
-    handleSubmit,
     isLoading,
     error,
     stop,
@@ -35,126 +28,98 @@ export default function Home() {
   } = useChat({
     onResponse: (response) => {
       if (response) {
-        setLoadingSubmit(false);
+        setLoadingSubmit(false)
       }
     },
     onError: (error) => {
-      setLoadingSubmit(false);
-      toast.error("An error occurred. Please try again.");
+      setLoadingSubmit(false)
+      toast.error('An error occurred. Please try again.')
     },
-  });
-  const [chatId, setChatId] = React.useState<string>("");
+  })
+  const [chatId, setChatId] = React.useState<string>('')
   const [selectedModel, setSelectedModel] = React.useState<string>(
-    getSelectedModel()
-  );
-  const [open, setOpen] = React.useState(false);
-  const [ollama, setOllama] = useState<ChatOllama>();
-  const env = process.env.NODE_ENV;
-  const [loadingSubmit, setLoadingSubmit] = React.useState(false);
+    getSelectedModel(),
+  )
+  const [open, setOpen] = React.useState(false)
+  const env = process.env.NODE_ENV
+  const [loadingSubmit, setLoadingSubmit] = React.useState(false)
 
   React.useEffect(() => {
     if (!isLoading && !error && chatId && messages.length > 0) {
       // Save messages to local storage
-      localStorage.setItem(`chat_${chatId}`, JSON.stringify(messages));
+      localStorage.setItem(`chat_${chatId}`, JSON.stringify(messages))
       // Trigger the storage event to update the sidebar component
-      window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new Event('storage'))
     }
-  }, [messages, chatId, isLoading, error]);
+  }, [messages, chatId, isLoading, error])
 
-  useEffect(() => {
-    if (env === "production") {
-      const newOllama = new ChatOllama({
-        baseUrl: process.env.NEXT_PUBLIC_OLLAMA_URL || "http://localhost:11434",
-        model: selectedModel,
-      });
-      setOllama(newOllama);
-    }
-
-    if (!localStorage.getItem("ollama_user")) {
-      setOpen(true);
-    }
-  }, [selectedModel]);
+  // setOpen(true)
 
   const addMessage = (Message: any) => {
-    messages.push(Message);
-    window.dispatchEvent(new Event("storage"));
-    setMessages([...messages]);
-  };
+    messages.push(Message)
+    window.dispatchEvent(new Event('storage'))
+    setMessages([...messages])
+  }
 
   // Function to handle chatting with Ollama in production (client side)
-  const handleSubmitProduction = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
 
-    addMessage({ role: "user", content: input, id: chatId });
-    setInput("");
+    addMessage({ role: 'user', content: input, id: chatId })
+    setInput('')
+    addMessage({ role: 'assistant', content: 'Yohohohohooo', id: chatId })
 
-    if (ollama) {
-      try {
-        const parser = new BytesOutputParser();
+    try {
+      // const parser = new BytesOutputParser();
 
-        const stream = await ollama
-          .pipe(parser)
-          .stream(
-            (messages as Message[]).map((m) =>
-              m.role == "user"
-                ? new HumanMessage(m.content)
-                : new AIMessage(m.content)
-            )
-          );
+      // const stream = await ollama
+      //   .pipe(parser)
+      //   .stream(
+      //     (messages as Message[]).map((m) =>
+      //       m.role == "user"
+      //         ? new HumanMessage(m.content)
+      //         : new AIMessage(m.content)
+      //     )
+      //   );
 
-        const decoder = new TextDecoder();
+      // const decoder = new TextDecoder();
 
-        let responseMessage = "";
-        for await (const chunk of stream) {
-          const decodedChunk = decoder.decode(chunk);
-          responseMessage += decodedChunk;
-        }
-        setMessages([
-          ...messages,
-          { role: "assistant", content: responseMessage, id: chatId },
-        ]);
-        setLoadingSubmit(false);
-      } catch (error) {
-        toast.error("An error occurred. Please try again.");
-        setLoadingSubmit(false);
-      }
+      // let responseMessage = "";
+      // for await (const chunk of stream) {
+      //   const decodedChunk = decoder.decode(chunk);
+      //   responseMessage += decodedChunk;
+      // }
+      // setMessages([
+      //   ...messages,
+      //   { role: "assistant", content: responseMessage, id: chatId },
+      // ]);
+      setLoadingSubmit(false)
+    } catch (error) {
+      toast.error('An error occurred. Please try again.')
+      setLoadingSubmit(false)
     }
-  };
+  }
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoadingSubmit(true);
+    e.preventDefault()
+    setLoadingSubmit(true)
 
     if (messages.length === 0) {
       // Generate a random id for the chat
-      const id = uuidv4();
-      setChatId(id);
+      const id = uuidv4()
+      setChatId(id)
     }
 
-    setMessages([...messages]);
-
-    // Prepare the options object with additional body data, to pass the model.
-    const requestOptions: ChatRequestOptions = {
-      options: {
-        body: {
-          selectedModel: selectedModel,
-        },
-      },
-    };
-
-    if (env === "production") {
-      handleSubmitProduction(e);
-    } else {
-      // Call the handleSubmit function with the options
-      handleSubmit(e, requestOptions);
-    }
-  };
+    setMessages([...messages])
+    handleSubmit(e)
+  }
 
   return (
     <main className="flex h-[calc(100dvh)] flex-col items-center ">
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={setOpen}
+      >
         <ChatLayout
           chatId=""
           setSelectedModel={setSelectedModel}
@@ -181,5 +146,5 @@ export default function Home() {
         </DialogContent>
       </Dialog>
     </main>
-  );
+  )
 }
