@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel
-from .query_manager import get_query_manager
+from .query_manager import get_query_manager, ApiQuery
 
 load_dotenv(find_dotenv())
 
@@ -15,12 +14,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class GenerateRequest(BaseModel):
-    query: str
-
 @app.post('/get-ai-response')
-def query(req_body:GenerateRequest):
+def query(query: ApiQuery):
     query_manager = get_query_manager()
-    response = query_manager.get_response(query=req_body.query)
-    return {"ai_response":response}
+    response = query_manager.get_response(query)
+    return {"ai_response": response["response"]}
 
