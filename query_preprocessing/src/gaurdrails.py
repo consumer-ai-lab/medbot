@@ -2,8 +2,8 @@ from langchain_google_genai import GoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 import json
-import os
 from dotenv import load_dotenv, find_dotenv
+from .create_llm import *
 
 load_dotenv(find_dotenv())
 
@@ -52,7 +52,8 @@ class GuardRails:
 
     prompt = self.gen_prompt()
 
-    llm = GoogleGenerativeAI(model="gemini-pro", google_api_key=os.getenv("GOOGLE_API_KEY"))
+    # llm = GoogleGenerativeAI(model="gemini-pro", google_api_key=os.getenv("GOOGLE_API_KEY"))
+    llm = CreateLLM.get_llm(model="gemini-pro", llm_name="GoogleGenerativeAI").llm
 
     chain = prompt | llm
 

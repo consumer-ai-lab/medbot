@@ -1,4 +1,4 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
+
 import google.generativeai as genai
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -6,16 +6,18 @@ from langchain.globals import set_debug
 import os
 from dotenv import find_dotenv, load_dotenv
 
+from .create_llm import *
+
 set_debug(True)
 
 load_dotenv(find_dotenv())
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 
 class ChatSummaryManager:
-    def __init__(self, model, temperature):
+    def __init__(self, model, temperature, llm):
         self.model = model
         self.temperature = temperature
-        self.llm = ChatGoogleGenerativeAI(model=self.model, temperature=self.temperature, convert_system_message_to_human=True)
+        self.llm = llm
 
     def combine_messages(self,messages):
         return "\n".join(f"{msg['type']} message: {msg['content']}" for msg in messages)
@@ -39,6 +41,7 @@ class ChatSummaryManager:
 def get_chat_summary_manager(model:str=None,temperature:float=None)->ChatSummaryManager:
     _model = model if model is not None else "gemini-pro"
     _temperature = temperature if temperature is not None else 0.5
-    return ChatSummaryManager(model=_model,temperature=_temperature)
+    llm = CreateLLM.get_llm(model=_model, llm_name="ChatGoogleGenerativeAI", temp=_temperature).llm
+    return ChatSummaryManager(model=_model,temperature=_temperature, llm=llm)
 
     
