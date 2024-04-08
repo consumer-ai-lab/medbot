@@ -43,34 +43,49 @@ def root():
 
 
 @app.post("/generate")
-def get_ai_message(query: ApiQuery) -> QaResponse:
+async def get_ai_message(query: ApiQuery):
+    # print(query)
     llm = CreateLLM(query.model).llm
 
     chat_manager = get_redis_manager(query.user_id)
     if not chat_manager.has_thread(query.thread_id):
         # TODO: get the llm to generate a title
         chat_manager.add_thread(
-            ChatThread(id=query.thread_id, title=query.question)
+            ChatThread(id=query.thread_id, title=query.prompt)
         )
 
     chat_history = chat_manager.get_chat(query.thread_id)
 
     chat_manager.add_message(
-        query.thread_id, Message(role=MessageRole.user, content=query.question)
+        query.thread_id, Message(role=MessageRole.user, content=query.prompt)
     )
 
     summary_manager = get_chat_summary_manager(query.model, temperature=0.2)
 
     summary = summary_manager.summarize_chats(history=chat_history)
 
-    qa_query = QaQuery(**(query.dict() | {"summary": summary}))
-    if not is_relevent(llm, qa_query):
+    qa_query = QaQuery(**(query.dict() | {"summary": "something"}))
+    # qa_query = QaQuery(**(query.dict()))
+    # if not is_relevent(llm, qa_query):
+    if True:
         return QaResponse(
             **{
                 "type": QaResponse.Type.REJECTED,
-                "response": "not related to medical stuff",
+                "response": "I am sorry, I am not able to answer this question. Please ask something else related to medicine.",
             }
         )
+
+        # TODO: add the message to the chat history
+
+        async def generator():
+            async for chunk in resp.response.split(" "):
+                yield chunk or ""
+
+        response_messages=generator()
+
+        return StreamingResponse(response_messages, media_type="text/event-stream")
+
+    
 
     try:
         response = requests.post(

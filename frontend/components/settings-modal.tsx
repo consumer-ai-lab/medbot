@@ -23,11 +23,8 @@ const formSchema = z.object({
   }),
 })
 
-interface EditUsernameFormProps {
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>
-}
 
-export function SettingsModal({ setOpen }: EditUsernameFormProps) {
+export function SettingsModal() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {

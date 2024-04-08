@@ -81,7 +81,7 @@ guard_prompt2_template = PromptTemplate(
 
 def guard_chain1(llm):
     return (
-        RunnableParallel(context=lambda x: x["summary"], prompt=lambda x: x["question"])
+        RunnableParallel(context=lambda x: x["summary"], prompt=lambda x: x["prompt"])
         | printer
         | RunnableLambda(
             lambda x: PromptTemplate(
@@ -96,7 +96,7 @@ def guard_chain1(llm):
     )
 def guard_chain2(llm):
     return (
-        RunnableParallel(prompt=lambda x: x["question"])
+        RunnableParallel(prompt=lambda x: x["prompt"])
         | printer
         | RunnableLambda(
             lambda x: PromptTemplate(
@@ -111,8 +111,8 @@ def guard_chain2(llm):
     )
 
 def is_relevent(llm, query: QaQuery):
-        chain = guard_chain1(llm)
-        # chain = guard_chain2(self.llm)
+        # chain = guard_chain1(llm)
+        chain = guard_chain2(llm)
 
         resp = chain.invoke(query.dict())
 
