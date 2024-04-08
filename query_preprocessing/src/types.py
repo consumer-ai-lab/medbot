@@ -44,7 +44,7 @@ class Model(str, enum.Enum):
                 return self.value
 
 class Query(pydantic.BaseModel):
-    question: str
+    prompt: str
     model: Model
 
 class ApiThreadQuery(pydantic.BaseModel):
@@ -55,11 +55,11 @@ class ApiQuery(pydantic.BaseModel):
     user_id: str
     thread_id: str
     model: Model
-    question: str
+    prompt: str
 
 class QaQuery(pydantic.BaseModel):
     model: Model
-    question: str
+    prompt: str
     summary: str
 
 

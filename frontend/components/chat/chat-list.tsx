@@ -12,7 +12,6 @@ export default function ChatList({
   handleInputChange,
   handleSubmit,
   isLoading,
-  error,
   stop,
   loadingSubmit,
 }: ChatProps) {

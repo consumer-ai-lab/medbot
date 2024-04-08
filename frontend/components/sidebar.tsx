@@ -74,11 +74,12 @@ export function Sidebar({
     }[]
   > => {
     try {
-      const chats = (
-        await axios.post('/api/chat/get-threads', {
-          user_id: localStorage.getItem('user_name') || '',
-        })
-      ).data
+      // const chats = (
+      //   await axios.post('/api/chat/get-threads', {
+      //     user_id: localStorage.getItem('user_name') || '',
+      //   })
+      // ).data
+      const chats = localChatss
 
       console.log(chats)
       if (chats.length === 0) {

@@ -29,9 +29,7 @@ interface UserSettingsProps {
 export default function UserSettings(
   { user }: UserSettingsProps
 ) {
-  const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(true)
-  const [open, setOpen] = useState(false)
 
   useEffect(()=>{
     if(user?.user_name){
@@ -80,7 +78,7 @@ export default function UserSettings(
           <DialogContent>
             <DialogHeader className="space-y-4">
               <DialogTitle>Settings</DialogTitle>
-              <SettingsModal setOpen={setOpen} />
+              <SettingsModal />
             </DialogHeader>
           </DialogContent>
         </Dialog>

@@ -15,7 +15,7 @@ export interface ChatProps {
   handleSubmit: (e: React.FormEvent<HTMLFormElement>, chatRequestOptions?: ChatRequestOptions) => void;
   isLoading: boolean;
   loadingSubmit?: boolean;
-  error: undefined | Error;
+  error?: undefined | Error;
   stop: () => void;
   }
 
