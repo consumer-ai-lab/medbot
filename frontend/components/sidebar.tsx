@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import UserSettings from './user-settings'
+import { UserType } from '@/lib/user-type'
 
 interface SidebarProps {
   isCollapsed: boolean
@@ -32,6 +33,7 @@ interface SidebarProps {
   onClick?: () => void
   isMobile: boolean
   chatId: string
+  user: UserType
 }
 
 export function Sidebar({
@@ -39,6 +41,7 @@ export function Sidebar({
   isCollapsed,
   isMobile,
   chatId,
+  user
 }: SidebarProps) {
   const [localChats, setLocalChats] = useState<
     { chatId: string; messages: Message[] }[]
@@ -112,7 +115,7 @@ export function Sidebar({
       <div className=" flex flex-col justify-between p-2 max-h-fit overflow-y-auto">
         <Button
           onClick={() => {
-            router.push('/')
+            router.push('/chat')
             // Clear messages
             messages.splice(0, messages.length)
           }}
@@ -217,7 +220,9 @@ export function Sidebar({
       </div>
 
       <div className="justify-end px-2 py-2 w-full border-t">
-        <UserSettings />
+        <UserSettings
+          user={user}
+        />
       </div>
     </div>
   )

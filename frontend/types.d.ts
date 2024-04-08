@@ -42,3 +42,4 @@ interface QaResponse {
   type: 'OK' | 'REJECTED'
   response: string
 }
+

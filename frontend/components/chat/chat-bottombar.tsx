@@ -95,7 +95,7 @@ export default function ChatBottombar({
                 variant="secondary"
                 size="icon"
                 type="submit"
-                disabled={!input.trim()}
+                // disabled={!input.trim()}
               >
                 <PaperPlaneIcon className=" w-6 h-6 text-muted-foreground" />
               </Button>

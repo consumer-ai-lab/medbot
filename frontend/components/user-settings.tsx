@@ -20,41 +20,24 @@ import { SettingsModal } from './settings-modal'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import { Skeleton } from './ui/skeleton'
+import { UserType } from '@/lib/user-type'
 
-export default function UserSettings() {
+interface UserSettingsProps {
+  user:UserType
+}
+
+export default function UserSettings(
+  { user }: UserSettingsProps
+) {
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [open, setOpen] = useState(false)
 
-  useEffect(() => {
-    const handleStorageChange = () => {
-      // TODO: get user name from auth values
-      const username = localStorage.getItem('user_name')
-      if (username) {
-        setName(username)
-        setIsLoading(false)
-      }
+  useEffect(()=>{
+    if(user?.user_name){
+      setIsLoading(false)
     }
-
-    const fetchData = () => {
-      // TODO: get user name from auth values
-      const username = localStorage.getItem('user_name')
-      if (username) {
-        setName(username)
-        setIsLoading(false)
-      }
-    }
-
-    // Initial fetch
-    fetchData()
-
-    // Listen for storage changes
-    window.addEventListener('storage', handleStorageChange)
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-    }
-  }, [])
+  },[user?.user_name])
 
   return (
     <DropdownMenu>
@@ -72,14 +55,14 @@ export default function UserSettings() {
               className="object-contain"
             />
             <AvatarFallback>
-              {name && name.substring(0, 2).toUpperCase()}
+              {user?.user_name && user.user_name.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="text-xs truncate">
             {isLoading ? (
               <Skeleton className="w-20 h-4" />
             ) : (
-              name || 'Anonymous'
+              user?.user_name || "Why?"
             )}
           </div>
         </Button>

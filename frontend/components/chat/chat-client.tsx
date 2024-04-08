@@ -9,33 +9,101 @@ import { cn } from '@/lib/utils'
 import React, { useEffect, useState } from 'react'
 import { Sidebar } from '../sidebar'
 import Chat, { ChatProps } from './chat'
+import { useChat, type Message } from 'ai/react'
+import { toast } from 'sonner'
+import { getSelectedModel } from '@/lib/model-helper'
+import { UserType } from '@/lib/user-type'
 
-interface ChatLayoutProps {
-  defaultLayout: number[] | undefined
+interface ChatClientProps {
+  defaultLayout?: number[] | undefined
   defaultCollapsed?: boolean
-  navCollapsedSize: number
-  chatId: string
+  navCollapsedSize?: number
+  chatId?: string
+  user:UserType;
 }
 
-type MergedProps = ChatLayoutProps & ChatProps
+const messages:Message[]=[
+  {
+    id:'abc',
+    content:'Hello, this is your friendly ai assistant',
+    role:'assistant'
+  },
+  {
+    id:'def',
+    content:'Hey AI, What can you do for me?',
+    role:'user'
+  },
+  {
+    id:'ghi',
+    content:'I can help you with anything you need',
+    role:'assistant'
+  },
+  {
+    id:'jkl',
+    content:'Great, I need help with my taxes',
+    role:'user'
+  },
+]
 
-export function ChatLayout({
+const chatId = 'abcdefg';
+
+export function ChatClient({
   defaultLayout = [30, 160],
   defaultCollapsed = false,
-  navCollapsedSize,
-  messages,
-  input,
-  handleInputChange,
-  handleSubmit,
-  isLoading,
-  error,
-  stop,
-  chatId,
-  setSelectedModel,
-  loadingSubmit,
-}: MergedProps) {
+  navCollapsedSize=10,
+  user,
+  // messages,  TODO: Fetch messages
+}: ChatClientProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed)
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(false);
+  const [loadingSubmit, setLoadingSubmit] = React.useState(false)
+  const {
+      messages,
+      input,
+      handleInputChange,
+      isLoading,
+      error,
+      stop,
+      setMessages,
+      setInput,
+    } = useChat({
+      onResponse: (response) => {
+        if (response) {
+          setLoadingSubmit(false)
+        }
+      },
+      onError: (error) => {
+        setLoadingSubmit(false)
+        toast.error('An error occurred. Please try again.')
+      },
+    })
+
+   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    // addMessage({ role: 'user', content: input, id: chatId })
+    // const body: ApiQuery = {
+    //   user_id: localStorage.getItem('user_name') || '',
+    //   model: selectedModel as Model,
+    //   question: input,
+    //   thread_id: chatId,
+    // }
+    // setInput('')
+    // const response = (await axios.post('/api/chat/generate', body)).data
+    // console.log(response)
+    // addMessage({ role: 'assistant', content: 'Yohohohohooo', id: chatId })
+
+    // try {
+    //   setLoadingSubmit(false)
+    // } catch (error) {
+    //   toast.error('An error occurred. Please try again.')
+    //   setLoadingSubmit(false)
+    // }
+  }
+
+    const [selectedModel, setSelectedModel] = React.useState<string>(
+    getSelectedModel(),
+  )
 
   useEffect(() => {
     const checkScreenWidth = () => {
@@ -89,6 +157,7 @@ export function ChatLayout({
         )}
       >
         <Sidebar
+          user={user}
           isCollapsed={isCollapsed || isMobile}
           messages={messages}
           isMobile={isMobile}
