@@ -12,7 +12,6 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod'
 import React from 'react'
 import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from './ui/button'
 
@@ -39,7 +38,6 @@ export function SettingsModal({ setOpen }: EditUsernameFormProps) {
     console.log(values)
     localStorage.setItem('selectedModel', values.model)
     window.dispatchEvent(new Event('storage'))
-    toast.success('Updated successfully')
   }
 
   const handleChange = (value: string) => {
