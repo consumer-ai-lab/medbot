@@ -47,6 +47,9 @@ from dotenv import find_dotenv, load_dotenv
 
 from langchain.globals import set_debug
 
+from .types import Model
+from .create_llm import CreateLLM
+
 set_debug(True)
 
 load_dotenv(find_dotenv())
@@ -202,13 +205,6 @@ generic_chatbot_promt_template = PromptTemplate(
 )
 
 
-class Model(str, enum.Enum):
-    gemini_pro_chat = "gemini-pro-chat"
-    gemini_pro = "gemini-pro"
-    llama2 = "llama2"
-    llama2_uncensored = "llama2-uncensored"
-
-
 class ApiQuery(pydantic.BaseModel):
     model: Model
     question: str
@@ -217,29 +213,12 @@ class ApiQuery(pydantic.BaseModel):
 
 class QaService:
     def get_model(self, model: Model, temperature=0.5):
-        if model == Model.gemini_pro:
-            llm = ChatGoogleGenerativeAI(
-                model="gemini-pro",
-                convert_system_message_to_human=True,
-                temperature=temperature,
-            )
-        elif model == Model.llama2 or model == Model.llama2_uncensored:
-            llm = Ollama(
-                base_url=os.getenv("OLLAMA_URL"),
-                system="",
-                template="",
-                model=model.value + ":vram-34",
-                temperature=temperature,
-            )
-        else:
-            raise RuntimeError("unknown llm")
-
-        return llm
+        return CreateLLM(model, temperature).llm
 
     def get_embeddings(self, model: Model):
         if model == Model.gemini_pro:
             embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-        elif model == Model.llama2 or model == Model.llama2_uncensored:
+        elif model == Model.ollama_llama2 or model == Model.ollama_llama2_uncensored:
             embeddings = OllamaEmbeddings(model=model.value + ":vram-34")
         else:
             raise RuntimeError("unknown embedding model")

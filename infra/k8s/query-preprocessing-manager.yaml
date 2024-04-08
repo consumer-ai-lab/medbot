@@ -30,6 +30,11 @@ spec:
                 secretKeyRef:
                   name: medbot-secret
                   key: OLLAMA_URL
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: GROQ_API_KEY
             - name: REDIS_HOST
               value: redis-service
 ---
