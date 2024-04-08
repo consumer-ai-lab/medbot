@@ -50,7 +50,7 @@ from langchain.globals import set_debug
 from .types import Model
 from .create_llm import CreateLLM
 
-set_debug(True)
+# set_debug(True)
 
 load_dotenv(find_dotenv())
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -211,6 +211,16 @@ class ApiQuery(pydantic.BaseModel):
     summary: str
 
 
+def printer_print(x):
+    print()
+    pprint.pprint(x)
+    print()
+    return x
+
+
+printer = RunnableLambda(printer_print)
+
+
 class QaService:
     def get_model(self, model: Model, temperature=0.5):
         return CreateLLM(model, temperature).llm
@@ -242,10 +252,12 @@ class VectorDbQaService(QaService):
             RunnableParallel(
                 question=(
                     question_rephrase_prompt_template
+                    | printer
                     | llm
                     | StrOutputParser()
                 ),
             )
+            | printer
             | RunnableParallel(
                 question=lambda x: x["question"],
                 context=lambda x: [
@@ -253,10 +265,12 @@ class VectorDbQaService(QaService):
                 ]
                 + self.db.as_retriever().invoke(x["question"]),
             )
+            | printer
             | RunnableParallel(
-                response=(chatbot_promt_template | llm | StrOutputParser()),
+                response=(chatbot_promt_template | printer | llm | StrOutputParser()),
                 context=lambda x: x["context"],
             )
+            | printer
         )
 
     def get_response(self, question: str, model: Model, summary: str):
@@ -342,7 +356,9 @@ class InternetQaService(QaService):
                 ),
                 question=lambda x: x["question"],
             )
+            | printer
             | RunnableLambda(lambda x: [x["question"]] + x["questions"])
+            | printer
         )
 
     def search_engine_chain(self):
@@ -404,9 +420,11 @@ class InternetQaService(QaService):
                             )
                         )
                     )
+                    | printer
                     | RunnableLambda(lambda x: [d for docs in x for d in docs["pages"]])
                 ),
             )
+            | printer
             | RunnableLambda(lambda x: retriever(x["pages"]).invoke(x["question"]))
             | RunnableLambda(
                 lambda x: [
@@ -414,6 +432,7 @@ class InternetQaService(QaService):
                     for d in x
                 ]
             )
+            | printer
         )
 
     def qa_chain(self, model: Model):
@@ -424,17 +443,21 @@ class InternetQaService(QaService):
             RunnableParallel(
                 question=(
                     question_rephrase_prompt_template
+                    | printer
                     | llm
                     | StrOutputParser()
                 ),
                 summary=lambda x: x["summary"],
             )
+            | printer
             | RunnableParallel(
                 question=lambda x: x["question"],
                 summary=lambda x: x["summary"],
                 context=self.web_context_chain(llm, embeddings),
             )
+            | printer
             | generic_chatbot_promt_template
+            | printer
             | llm
             | StrOutputParser()
         )

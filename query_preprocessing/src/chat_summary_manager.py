@@ -9,6 +9,7 @@ from langchain_core.documents import Document
 from langchain.globals import set_debug
 import os
 from dotenv import find_dotenv, load_dotenv
+import pprint
 import enum
 import pydantic
 from typing import List
@@ -17,11 +18,20 @@ import json
 from .create_llm import CreateLLM
 from .types import Model, Message, MessageRole
 
-set_debug(True)
+# set_debug(True)
 
 load_dotenv(find_dotenv())
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
+
+def printer_print(x):
+    print()
+    pprint.pprint(x)
+    print()
+    return x
+
+
+printer = RunnableLambda(printer_print)
 
 summarization_prompt_template = ChatPromptTemplate.from_messages(
     [
@@ -43,7 +53,9 @@ def summary_chain(llm):
                 input_variables=[],
             ).invoke({})
         )
+        | printer
         | llm
+        | printer
         | StrOutputParser()
     )
 

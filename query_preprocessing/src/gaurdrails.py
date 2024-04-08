@@ -4,11 +4,22 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda, RunnableParallel
 import json
 from dotenv import load_dotenv, find_dotenv
+import pprint
 
 from .create_llm import CreateLLM
 from .types import Model, QaQuery
 
 load_dotenv(find_dotenv())
+
+
+def printer_print(x):
+    print()
+    pprint.pprint(x)
+    print()
+    return x
+
+
+printer = RunnableLambda(printer_print)
 
 # TODO: maybe fuse both these prompt
 guard_prompt = """
@@ -71,25 +82,31 @@ guard_prompt2_template = PromptTemplate(
 def guard_chain1(llm):
     return (
         RunnableParallel(context=lambda x: x["summary"], prompt=lambda x: x["question"])
+        | printer
         | RunnableLambda(
             lambda x: PromptTemplate(
                 template=guard_prompt_template.invoke(x).to_string(),
                 input_variables=[],
             ).invoke({})
         )
+        | printer
         | llm
+        | printer
         | StrOutputParser()
     )
 def guard_chain2(llm):
     return (
         RunnableParallel(prompt=lambda x: x["question"])
+        | printer
         | RunnableLambda(
             lambda x: PromptTemplate(
                 template=guard_prompt2_template.invoke(x).to_string(),
                 input_variables=[],
             ).invoke({})
         )
+        | printer
         | llm
+        | printer
         | StrOutputParser()
     )
 
