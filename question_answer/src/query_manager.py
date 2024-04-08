@@ -249,17 +249,18 @@ class VectorDbQaService(QaService):
         llm = self.get_model(model, 0)
 
         return (
+            # RunnableParallel(
+            #     question=(
+            #         question_rephrase_prompt_template
+            #         | printer
+            #         | llm
+            #         | StrOutputParser()
+            #     ),
+            # )
+            # | printer
             RunnableParallel(
-                question=(
-                    question_rephrase_prompt_template
-                    | printer
-                    | llm
-                    | StrOutputParser()
-                ),
-            )
-            | printer
-            | RunnableParallel(
                 question=lambda x: x["question"],
+                summary=lambda x: x['summary'],
                 context=lambda x: [
                     # Document(page_content=PubmedQueryRun().invoke(x["question"]))
                 ]
@@ -267,7 +268,8 @@ class VectorDbQaService(QaService):
             )
             | printer
             | RunnableParallel(
-                response=(chatbot_promt_template | printer | llm | StrOutputParser()),
+                # response=(chatbot_promt_template | printer | llm | StrOutputParser()),
+                response=(chatbot_with_history_promt_template | printer | llm | StrOutputParser()),
                 context=lambda x: x["context"],
             )
             | printer
