@@ -86,9 +86,11 @@ export function ChatClient({
 			})
 		},
 		body: {
-			user_id: 'asdasd' || '',
 			model: getSelectedModel() as Model,
-			thread_id: 'klsdfa',
+			thread_id: 'icecreamcupcakewithmilk',
+			// TODO: make enums for these
+			embeddings_model: "gemini-pro",
+			strategy: "medical-database",
 		}
 	})
 
