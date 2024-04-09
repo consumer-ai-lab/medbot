@@ -71,48 +71,6 @@ export default function ChatTopbar({
           />
         </SheetContent>
       </Sheet>
-
-      <Popover
-        open={open}
-        onOpenChange={setOpen}
-      >
-        <PopoverTrigger asChild>
-          <Button
-            disabled={isLoading}
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-[300px] justify-between"
-          >
-            {currentModel || 'Select model'}
-            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-1">
-          {models.length > 0 ? (
-            models.map((model) => (
-              <Button
-                key={model}
-                variant="ghost"
-                className="w-full"
-                onClick={() => {
-                  handleModelChange(model)
-                }}
-              >
-                {model}
-              </Button>
-            ))
-          ) : (
-            <Button
-              variant="ghost"
-              disabled
-              className=" w-full"
-            >
-              No models available
-            </Button>
-          )}
-        </PopoverContent>
-      </Popover>
     </div>
   )
 }

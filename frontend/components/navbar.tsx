@@ -63,7 +63,7 @@ export default function Navbar({ currentUser }: NavbarProps) {
   }
 
   return (
-    <div className="fixed w-full z-50 flex justify-between items-center py-2 px-4 border-b border-primary/10 bg-secondary h-16">
+    <div className="w-full h-[calc(10dvh)] z-50 flex justify-between items-center py-2 px-4 border-b border-primary/10 bg-secondary">
       <div
         className="flex text-3xl items-center cursor-pointer"
         onClick={() => router.push('/')}
