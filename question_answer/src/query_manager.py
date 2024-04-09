@@ -50,7 +50,7 @@ from langchain.globals import set_debug
 
 from .types import Model, QaQuery, Strategy, EmbeddingsModel
 from .create_llm import CreateLLM
-from .proompter import Proompter, printer, hacky_extract_json_list
+from .proompter import Proompter, printer
 from .proompts import pubmed_query_prompt_template
 
 # set_debug(True)
@@ -99,8 +99,7 @@ class PubmedQaService(Proompter):
                     | llm
                     | StrOutputParser()
                     | printer
-                    | RunnableLambda(hacky_extract_json_list)
-                    | RunnableLambda(lambda x: json.loads(x))
+                    | self.hacky_list_of_strings_chain()
                 ),
                 prompt=lambda x: x["prompt"],
             )

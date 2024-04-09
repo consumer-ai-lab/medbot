@@ -8,52 +8,51 @@ import pprint
 
 from .create_llm import CreateLLM
 from .types import Model, QaQuery, RelevanceResponse
-from .proompter import printer, hacky_extract_json_dict
+from .proompter import printer, Proompter
 from .proompts import guard_prompt_template, guard_prompt2_template
 
 load_dotenv(find_dotenv())
 
 
-def guard_chain1(llm):
-    return (
-        RunnableParallel(context=lambda x: x["summary"], prompt=lambda x: x["prompt"])
-        | printer
-        | RunnableLambda(
-            lambda x: PromptTemplate(
-                template=guard_prompt_template.invoke(x).to_string(),
-                input_variables=[],
-            ).invoke({})
+class RelevenceProompter(Proompter):
+    def guard_chain1(self, llm):
+        return (
+            RunnableParallel(context=lambda x: x["summary"], prompt=lambda x: x["prompt"])
+            | printer
+            | RunnableLambda(
+                lambda x: PromptTemplate(
+                    template=guard_prompt_template.invoke(x).to_string(),
+                    input_variables=[],
+                ).invoke({})
+            )
+            | printer
+            | llm
+            | printer
+            | StrOutputParser()
         )
-        | printer
-        | llm
-        | printer
-        | StrOutputParser()
-    )
 
 
-def guard_chain2(llm):
-    return (
-        RunnableParallel(prompt=lambda x: x["prompt"])
-        | printer
-        | RunnableLambda(
-            lambda x: PromptTemplate(
-                template=guard_prompt2_template.invoke(x).to_string(),
-                input_variables=[],
-            ).invoke({})
+    def guard_chain2(self, llm):
+        return (
+            RunnableParallel(prompt=lambda x: x["prompt"])
+            | printer
+            | RunnableLambda(
+                lambda x: PromptTemplate(
+                    template=guard_prompt2_template.invoke(x).to_string(),
+                    input_variables=[],
+                ).invoke({})
+            )
+            | printer
+            | llm
+            | printer
+            | StrOutputParser()
         )
-        | printer
-        | llm
-        | printer
-        | StrOutputParser()
-    )
 
-
-def relevance_chain(llm):
-    chain = guard_chain1(llm)
-    # chain = guard_chain2(llm)
-    return (
-        chain
-        | RunnableLambda(hacky_extract_json_dict)
-        | RunnableLambda(lambda x: json.loads(x))
-        | RunnableLambda(lambda x: RelevanceResponse(**x))
-    )
+    def relevance_chain(self, llm):
+        chain = self.guard_chain1(llm)
+        # chain = guard_chain2(llm)
+        return (
+            chain
+            | self.hacky_string_dict_chain()
+            | RunnableLambda(lambda x: RelevanceResponse(**x))
+        )

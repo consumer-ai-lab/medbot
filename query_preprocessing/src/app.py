@@ -11,7 +11,7 @@ from langchain_core.output_parsers import StrOutputParser
 from dotenv import find_dotenv, load_dotenv
 from typing import List
 
-from .guard_rails import relevance_chain
+from .guard_rails import RelevenceProompter
 from .types import (
     ApiQuery,
     QaQuery,
@@ -69,7 +69,8 @@ async def get_ai_message(
     summary = summary_manager.summarize_chats(history=chat_history)
 
     qa_query = QaQuery(**(query.dict() | {"summary": summary}))
-    guard_chain = relevance_chain(llm)
+    relevance = RelevenceProompter()
+    guard_chain = relevance.relevance_chain(llm)
     resp = guard_chain.invoke(qa_query.dict())
     if not resp.is_related():
         resp = QaResponse(
