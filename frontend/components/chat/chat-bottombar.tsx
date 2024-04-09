@@ -75,7 +75,7 @@ export default function ChatBottombar({
             onSubmit={handleSubmit}
             className="w-full items-center flex relative gap-2"
           >
-            <div className="flex">
+            {/* <div className="flex">
               <Link
                 href="#"
                 className={cn(
@@ -84,7 +84,7 @@ export default function ChatBottombar({
               >
                 <ImageIcon className="w-6 h-6 text-muted-foreground" />
               </Link>
-            </div>
+            </div> */}
 
             <TextareaAutosize
               autoComplete="off"
