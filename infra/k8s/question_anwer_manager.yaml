@@ -35,6 +35,11 @@ spec:
                 secretKeyRef:
                   name: medbot-secret
                   key: GROQ_API_KEY
+            - name: TAVILY_AI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: TAVILY_AI_API_KEY
             - name: CONNECTION_STRING
               value: 'postgresql+psycopg2://admin:admin@postgres-service:5432/vectordb'
             - name: CONNECTION_NAME
