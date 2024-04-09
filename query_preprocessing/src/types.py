@@ -60,6 +60,11 @@ class EmbeddingsModel(str, enum.Enum):
             case _:
                 return self.value
 
+class Strategy(str, enum.Enum):
+    medical_database = "medical-database"
+    pubmed_search = "pubmed-search"
+    web_search = "web-search"
+
 class Query(pydantic.BaseModel):
     prompt: str
     model: Model
@@ -71,11 +76,13 @@ class ApiQuery(pydantic.BaseModel):
     thread_id: str
     model: Model
     embeddings_model: EmbeddingsModel
+    strategy: Strategy
     prompt: str
 
 class QaQuery(pydantic.BaseModel):
     model: Model
     embeddings_model: EmbeddingsModel
+    strategy: Strategy
     prompt: str
     summary: str
 
@@ -106,3 +113,5 @@ class QaResponse(pydantic.BaseModel):
 
     type: Type
     response: str
+
+
