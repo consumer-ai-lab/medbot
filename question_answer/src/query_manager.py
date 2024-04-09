@@ -235,7 +235,8 @@ class QaService:
         elif model == Model.ollama_llama2 or model == Model.ollama_llama2_uncensored:
             embeddings = OllamaEmbeddings(model=model.value + ":vram-34")
         else:
-            raise RuntimeError("unknown embedding model")
+            embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+            # raise RuntimeError("unknown embedding model")
 
         return embeddings
 
@@ -328,24 +329,24 @@ class InternetQaService(QaService):
             pass
 
         def requests_loader(urls):
-            # if self.session is None:
-            #     self.session = requests.Session()
+            if self.session is None:
+                self.session = requests.Session()
 
-            # docs = []
-            # for url in urls:
-            #     response = self.session.get(url, timeout=4)
-            #     soup = BeautifulSoup(
-            #         response.content, "lxml", from_encoding=response.encoding
-            #     )
-            #     text = ""
-            #     for element in soup.find_all(tags):
-            #         text += element.text + "\n"
-            #     doc = {
-            #         "page_content": text,
-            #         "source": url,
-            #     }
-            #     docs.append(doc)
-            # return docs
+            docs = []
+            for url in urls:
+                response = self.session.get(url, timeout=4)
+                soup = BeautifulSoup(
+                    response.content, "lxml", from_encoding=response.encoding
+                )
+                text = ""
+                for element in soup.find_all(tags):
+                    text += element.text + "\n"
+                doc = {
+                    "page_content": text,
+                    "source": url,
+                }
+                docs.append(doc)
+            return docs
             pass
 
         if method == InternetQaService.UrlExtractionMethod.CHROME:
@@ -427,16 +428,16 @@ class InternetQaService(QaService):
                             | RunnableParallel(
                                 prompt=lambda x: x["prompt"],
                                 pages=self.url_content_extraction_chain(
-                                    InternetQaService.UrlExtractionMethod.CHROME
+                                    InternetQaService.UrlExtractionMethod.REQUESTS
                                 ),
                             )
                         )
                     )
-                    | printer
+                    # | printer
                     | RunnableLambda(lambda x: [d for docs in x for d in docs["pages"]])
                 ),
             )
-            | printer
+            # | printer
             | RunnableLambda(lambda x: retriever(x["pages"]).invoke(x["prompt"]))
             | RunnableLambda(
                 lambda x: [
@@ -468,10 +469,16 @@ class InternetQaService(QaService):
                 context=self.web_context_chain(llm, embeddings),
             )
             | printer
-            | generic_chatbot_promt_template
-            | printer
-            | llm
-            | StrOutputParser()
+            | RunnableParallel(
+                context=lambda x: x["context"],
+                response=(
+                    generic_chatbot_promt_template
+                    | printer
+                    | llm
+                    | printer
+                    | StrOutputParser()
+                )
+            )
         )
 
     def get_response(self, prompt: str, model: Model, summary: str):
