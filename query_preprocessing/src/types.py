@@ -44,6 +44,27 @@ class Model(str, enum.Enum):
             case _:
                 return self.value
 
+class EmbeddingsModel(str, enum.Enum):
+    gemini_pro = "gemini-pro"
+    ollama_llama2 = "ollama-llama2"
+    ollama_llama2_uncensored = "ollama-llama2-uncensored"
+
+    def model(self):
+        match self:
+            case EmbeddingsModel.gemini_pro:
+                return "gemini-pro"
+            case EmbeddingsModel.ollama_llama2:
+                return "llama2"
+            case EmbeddingsModel.ollama_llama2_uncensored:
+                return "llama2-uncensored"
+            case _:
+                return self.value
+
+class Strategy(str, enum.Enum):
+    medical_database = "medical-database"
+    pubmed_search = "pubmed-search"
+    web_search = "web-search"
+
 class Query(pydantic.BaseModel):
     prompt: str
     model: Model
@@ -54,10 +75,14 @@ class ApiThreadQuery(pydantic.BaseModel):
 class ApiQuery(pydantic.BaseModel):
     thread_id: str
     model: Model
+    embeddings_model: EmbeddingsModel
+    strategy: Strategy
     prompt: str
 
 class QaQuery(pydantic.BaseModel):
     model: Model
+    embeddings_model: EmbeddingsModel
+    strategy: Strategy
     prompt: str
     summary: str
 
