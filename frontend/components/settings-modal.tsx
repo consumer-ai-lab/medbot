@@ -50,9 +50,6 @@ export function SettingsModal() {
       description: "Model changed successfully, please close the modal now.",
     })
   }
-  const handleChange = (value: string) => {
-    form.setValue('model', value)
-  }
 
   return (
     <Form {...form}>
@@ -60,7 +57,7 @@ export function SettingsModal() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 pt-4"
       >
-        <Select onValueChange={handleChange} value={selectedModel}>
+        <Select onValueChange={(e)=>setSelectedModel(e)} value={selectedModel}>
           <SelectTrigger>
             <SelectValue
               placeholder="Select Model" 
@@ -82,7 +79,7 @@ export function SettingsModal() {
             })}
           </SelectContent>
         </Select> */}
-        <Button type="submit">Submit</Button>
+        <Button type="submit">Save</Button>
       </form>
     </Form>
   )
