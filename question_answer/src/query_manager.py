@@ -422,18 +422,22 @@ class InternetQaService(QaService):
 
             docs = []
             for url in urls:
-                response = self.session.get(url, timeout=4)
-                soup = BeautifulSoup(
-                    response.content, "lxml", from_encoding=response.encoding
-                )
-                text = ""
-                for element in soup.find_all(tags):
-                    text += element.text + "\n"
-                doc = {
-                    "page_content": text,
-                    "source": url,
-                }
-                docs.append(doc)
+                try:
+                    response = self.session.get(url, timeout=6)
+                    soup = BeautifulSoup(
+                        response.content, "lxml", from_encoding=response.encoding
+                    )
+                    text = ""
+                    for element in soup.find_all(tags):
+                        text += element.text + "\n"
+                    doc = {
+                        "page_content": text,
+                        "source": url,
+                    }
+                    docs.append(doc)
+                except Exception as e:
+                    print(f"ERROR while searching url {url}: ", e)
+                    continue
             return docs
             pass
 
