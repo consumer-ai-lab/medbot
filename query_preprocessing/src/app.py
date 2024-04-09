@@ -81,7 +81,7 @@ async def get_ai_message(query: ApiQuery):
         async def generator():
             for chunk in resp.response.split():
                 yield f"{chunk} " 
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.1)
 
         response_messages=generator()
 

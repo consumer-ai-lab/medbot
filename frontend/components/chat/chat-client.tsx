@@ -7,9 +7,9 @@ import {
 import { cn } from '@/lib/utils'
 import React, { useEffect, useState } from 'react'
 import { Sidebar } from '../sidebar'
-import Chat, { ChatProps } from './chat'
+import Chat from './chat'
 import { useCompletion, type Message } from 'ai/react'
-import { toast } from 'sonner'
+import { useToast } from '../ui/use-toast'
 import { getSelectedModel } from '@/lib/model-helper'
 import { UserType } from '@/lib/user-type'
 import { Model } from '@/Model'
@@ -49,6 +49,7 @@ export function ChatClient({
 	user
 	// messages,  TODO: Fetch messages
 }: ChatClientProps) {
+	const {toast}=useToast();
 	const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed)
 	const [isMobile, setIsMobile] = useState(false);
 	const [loadingSubmit, setLoadingSubmit] = React.useState(false)
@@ -79,7 +80,10 @@ export function ChatClient({
 		},
 		onError: (error) => {
 			setLoadingSubmit(false)
-			toast.error('An error occurred. Please try again.')
+			toast({
+				variant:"destructive",
+				description:'An error occurred. Please try again.'
+			})
 		},
 		body: {
 			user_id: 'asdasd' || '',
