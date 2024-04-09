@@ -91,22 +91,17 @@ async def get_ai_message(
             "http://qa-service:8000/get-ai-response", json=qa_query.dict()
         )
         response.raise_for_status()
-        ai_response = response.json()
+        response = response.json()
+        response = QaResponse(**response)
     except requests.exceptions.RequestException as e:
         # return QaResponse(**{"type": QaResponse.Type.ERROR, "response": e})
-        raise HTTPException(status_code=418, detail=e)
+        raise HTTPException(status_code=418, detail=str(e))
     else:
         chat_manager.add_message(
             query.thread_id,
-            Message(role=MessageRole.assistant, content=ai_response.get("ai_response")),
+            Message(role=MessageRole.assistant, content=response.response),
         )
-        resp = QaResponse(
-            **{
-                "type": QaResponse.Type.OK,
-                "response": ai_response.get("ai_response"),
-            }
-        )
-        return StreamingResponse(generator(resp), media_type="text/event-stream")
+        return StreamingResponse(generator(response), media_type="text/event-stream")
 
 
 @app.get("/get-threads")
