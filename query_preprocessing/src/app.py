@@ -45,27 +45,24 @@ def root():
 
 @app.post("/generate")
 async def get_ai_message(query: ApiQuery):
-    # print(query)
-    llm = CreateLLM(query.model).llm
+    # llm = CreateLLM(query.model).getModel()
 
     chat_manager = get_redis_manager(query.user_id)
     if not chat_manager.has_thread(query.thread_id):
-        # TODO: get the llm to generate a title
         chat_manager.add_thread(
             ChatThread(id=query.thread_id, title=query.prompt)
         )
-
     chat_history = chat_manager.get_chat(query.thread_id)
 
     chat_manager.add_message(
         query.thread_id, Message(role=MessageRole.user, content=query.prompt)
     )
 
-    summary_manager = get_chat_summary_manager(query.model, temperature=0.2)
+    # TODO
+    # summary_manager = get_chat_summary_manager(llm)
+    # summary = summary_manager.summarize_chats(history=chat_history)
 
-    summary = summary_manager.summarize_chats(history=chat_history)
-
-    qa_query = QaQuery(**(query.dict() | {"summary": "something"}))
+    qa_query = QaQuery(**(query.dict() | {"summary": "no previous chat history"}))
     # qa_query = QaQuery(**(query.dict()))
     # if not is_relevent(llm, qa_query):
     if True:
@@ -77,6 +74,10 @@ async def get_ai_message(query: ApiQuery):
         )
 
         # TODO: add the message to the chat history
+        chat_manager.add_message(
+            query.thread_id,
+            Message(role=MessageRole.assistant, content=resp.response),
+        )
 
         async def generator():
             for chunk in resp.response.split():
@@ -116,6 +117,7 @@ def threads(user_id: str) -> List[ChatThread]:
     chat_manager = get_redis_manager(user_id)
     threads = chat_manager.get_threads()
     return threads
+
 
 
 @app.post("/thread")

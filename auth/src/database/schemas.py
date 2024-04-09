@@ -15,6 +15,7 @@ class SignInUser(BaseModel):
 
 
 class UserBase(BaseModel):
+    user_id:str
     email:str
     user_name:str
     user_level:UserLevel = UserLevel.user

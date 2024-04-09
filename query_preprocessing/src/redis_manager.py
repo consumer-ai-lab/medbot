@@ -62,13 +62,13 @@ class RedisManager:
         self.redis.lpush(self.key, thread.json())
 
 def get_redis_manager(
-    session_id: str,
+    user_id: str,
     redis_url: str = "redis-service",
     redis_port: int = 6379,
     chats_life_time: int = 300,
 ) -> RedisManager:
     return RedisManager(
-        session_id,
+        user_id,
         redis_url,
         redis_port,
         chats_life_time,

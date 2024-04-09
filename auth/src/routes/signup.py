@@ -29,7 +29,7 @@ async def sign_up_user(
     db.refresh(db_user)
     
     # create jwt
-    encoded_jwt=create_access_token(data={"sub":db_user.user_name, "email": db_user.email, "user_level": db_user.user_level})
+    encoded_jwt=create_access_token(data={"sub":str(db_user.id),"user_name":db_user.user_name, "email": db_user.email, "user_level": db_user.user_level})
 
     # set cookie
     created_user = UserBase(user_name=db_user.user_name,email=db_user.email,user_level=db_user.user_level)

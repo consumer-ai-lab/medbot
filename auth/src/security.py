@@ -30,7 +30,7 @@ def get_current_user(request:Request):
         payload = jwt.decode(jwt_token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    return UserBase(user_name=payload.get("sub"),email=payload.get("email"),user_level=payload.get("user_level"))
+    return UserBase(user_id=payload.get("sub"),user_name=payload.get("user_name"),email=payload.get("email"),user_level=payload.get("user_level"))
 
 
 def verify_password(plain_password:str,hashed_password:str):
