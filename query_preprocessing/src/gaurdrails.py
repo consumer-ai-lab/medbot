@@ -27,15 +27,15 @@ System: you are an AI. your job is to check if the given prompt is related to me
 
 Context: user tells AI that they fell on their knee on a playground and hurt themselves.
 Prompt: How do i treat it?
-Output: {{{{ "related": "YES", "reason": "user wants to know how to treat a knee wound" }}}}
+Output: {{{{ "related": "YES", "reason": "I am allowed to tell you how to treat their knee." }}}}
 
 Context: user tells AI they they have cough.
 Prompt: How do i complete the first level of mario?
-Output: {{{{ "related": "NO", "reason": "user want information about mario. not related to any medical context" }}}}
+Output: {{{{ "related": "NO", "reason": "I am not allowed to tell you about Mario. it is not related to any medical context." }}}}
 
 Context: None
 Prompt: How do i eat a cabbage?
-Output: {{{{ "related": "NO", "reason": "user want information about eating cabbage. not related to any medical context" }}}}
+Output: {{{{ "related": "NO", "reason": "I cannot tell you anything about eating cabbage. not related to any medical context" }}}}
 
 Context: {context}
 Prompt: {prompt}
