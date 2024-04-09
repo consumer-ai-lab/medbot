@@ -7,18 +7,14 @@ import { Sidebar } from '../sidebar'
 import { UserType } from '@/lib/user-type'
 
 interface ChatTopbarProps {
-  isLoading: boolean
   threadId?: string
   setThreadId: (threadId: string) => void
-  messages: Message[]
   user:UserType
 }
 
 export default function ChatTopbar({
-  isLoading,
   threadId,
   setThreadId,
-  messages,
   user
 }: ChatTopbarProps) {
 
@@ -35,7 +31,6 @@ export default function ChatTopbar({
             setThreadId={setThreadId}
             isCollapsed={false}
             isMobile={false}
-            messages={messages}
           />
         </SheetContent>
       </Sheet>

@@ -5,10 +5,11 @@ import ChatBottombar from './chat-bottombar'
 import { type Message } from 'ai/react';
 import { ChatRequestOptions } from 'ai';
 import { UserType } from '@/lib/user-type';
+import { MessageType } from '@/lib/message-type';
 
 export interface ChatProps {
   setSelectedModel?: React.Dispatch<React.SetStateAction<string>>;
-  messages: Message[];
+  messages: MessageType[];
   input: string;
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>, chatRequestOptions?: ChatRequestOptions) => void;
@@ -28,10 +29,8 @@ export default function Chat ({ messages, input, handleInputChange, handleSubmit
     <div className="flex flex-col justify-between w-full h-full  ">
         <ChatTopbar
           user={user}  
-          isLoading={isLoading}
           threadId={threadId}
           setThreadId={setThreadId}
-          messages={messages} 
         />
         <ChatList  
           completion={completion}
