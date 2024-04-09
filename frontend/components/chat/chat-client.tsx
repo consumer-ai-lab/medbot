@@ -38,11 +38,6 @@ const messagesStub: Message[] = [
 		content: 'I can help you with anything you need',
 		role: 'assistant'
 	},
-	{
-		id: 'jkl',
-		content: 'Great, I need help with my taxes',
-		role: 'user'
-	},
 ]
 
 const chatId = 'abcdefg';
@@ -61,6 +56,8 @@ export function ChatClient({
 
 	const {
 		input,
+		setInput,
+		completion,
 		isLoading,
 		handleInputChange,
 		handleSubmit,
@@ -76,7 +73,8 @@ export function ChatClient({
         },
 		onResponse: (response) => {
 			if (response) {
-				setLoadingSubmit(false)
+				setInput('')
+				setLoadingSubmit(false);
 			}
 		},
 		onError: (error) => {
@@ -99,14 +97,6 @@ export function ChatClient({
         setMessages((current) => [...current, userMessage]);
         handleSubmit(e);
     }
-
-
-
-
-	const [selectedModel, setSelectedModel] = React.useState<string>(
-		getSelectedModel(),
-	)
-
 
 	
 	useEffect(() => {
@@ -177,15 +167,15 @@ export function ChatClient({
 				defaultSize={defaultLayout[1]}
 			>
 				<Chat
+					user={user}
+					completion={completion}
 					chatId={chatId}
-					setSelectedModel={setSelectedModel}
 					messages={messages}
 					input={input}
 					handleInputChange={handleInputChange}
 					handleSubmit={onSubmit}
 					isLoading={isLoading}
 					loadingSubmit={loadingSubmit}
-					// error={error}
 					stop={stop}
 				/>
 			</ResizablePanel>

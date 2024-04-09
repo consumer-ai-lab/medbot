@@ -5,16 +5,21 @@ import React, { useEffect, useRef } from 'react'
 import CodeDisplayBlock from '../code-display-block'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { ChatProps } from './chat'
+import { Message } from 'ai'
+
+interface ChatListProps {
+  messages:Message[];
+  completion:string;
+  isLoading:boolean;
+  loadingSubmit?: boolean;
+}
 
 export default function ChatList({
   messages,
-  input,
-  handleInputChange,
-  handleSubmit,
+  completion,
   isLoading,
-  stop,
   loadingSubmit,
-}: ChatProps) {
+}: ChatListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const [name, setName] = React.useState<string>('')
   const [localStorageIsLoading, setLocalStorageIsLoading] = React.useState(true)
@@ -34,6 +39,7 @@ export default function ChatList({
       setLocalStorageIsLoading(false)
     }
   }, [])
+
 
   if (messages.length === 0) {
     return (
@@ -60,93 +66,124 @@ export default function ChatList({
       className="w-full overflow-y-scroll overflow-x-hidden h-full justify-end"
     >
       <div className="w-full flex flex-col overflow-x-hidden overflow-y-hidden min-h-full justify-end">
-        {messages.map((message, index) => (
-          <motion.div
-            key={index}
-            layout
-            initial={{ opacity: 0, scale: 1, y: 20, x: 0 }}
-            animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-            exit={{ opacity: 0, scale: 1, y: 20, x: 0 }}
-            transition={{
-              opacity: { duration: 0.1 },
-              layout: {
-                type: 'spring',
-                bounce: 0.3,
-                duration: messages.indexOf(message) * 0.05 + 0.2,
-              },
-            }}
-            className={cn(
-              'flex flex-col gap-2 p-4 whitespace-pre-wrap',
-              message.role === 'user' ? 'items-end' : 'items-start',
-            )}
-          >
-            <div className="flex gap-3 items-center">
-              {message.role === 'user' && (
-                <div className="flex items-end gap-3">
-                  <span className="bg-accent p-3 rounded-md max-w-xs sm:max-w-2xl overflow-x-auto">
-                    {message.content}
-                  </span>
-                  <Avatar className="flex justify-start items-center overflow-hidden">
-                    <AvatarImage
-                      src="/"
-                      alt="user"
-                      width={6}
-                      height={6}
-                      className="object-contain"
-                    />
-                    <AvatarFallback>
-                      {name && name.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
+        {messages.map((message, index) => {
+          console.log(message.content);
+          return (
+            <motion.div
+              key={index}
+              layout
+              initial={{ opacity: 0, scale: 1, y: 20, x: 0 }}
+              animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+              exit={{ opacity: 0, scale: 1, y: 20, x: 0 }}
+              transition={{
+                opacity: { duration: 0.1 },
+                layout: {
+                  type: 'spring',
+                  bounce: 0.3,
+                  duration: messages.indexOf(message) * 0.05 + 0.2,
+                },
+              }}
+              className={cn(
+                'flex flex-col gap-2 p-4 whitespace-pre-wrap',
+                message.role === 'user' ? 'items-end' : 'items-start',
               )}
-              {message.role === 'assistant' && (
-                <div className="flex items-end gap-2">
-                  <Avatar className="flex justify-start items-center">
-                    <AvatarImage
-                      src="/ollama.png"
-                      alt="AI"
-                      width={6}
-                      height={6}
-                      className="object-contain dark:invert"
-                    />
-                  </Avatar>
-                  <span className="bg-accent p-3 rounded-md max-w-xs sm:max-w-2xl overflow-x-auto">
-                    {/* Check if the message content contains a code block */}
-                    {message.content.split('```').map((part, index) => {
-                      if (index % 2 === 0) {
-                        return (
-                          <React.Fragment key={index}>{part}</React.Fragment>
-                        )
-                      } else {
-                        return (
-                          <pre
-                            className="whitespace-pre-wrap"
-                            key={index}
+            >
+              <div className="flex gap-3 items-center">
+                {message.role === 'user' && (
+                  <div className="flex items-end gap-3">
+                    <span className="bg-accent p-3 rounded-md max-w-xs sm:max-w-2xl overflow-x-auto">
+                      {message.content}
+                    </span>
+                    <Avatar className="flex justify-start items-center overflow-hidden">
+                      <AvatarImage
+                        src="/"
+                        alt="user"
+                        width={6}
+                        height={6}
+                        className="object-contain"
+                      />
+                      <AvatarFallback>
+                        {name && name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                )}
+                {message.role === 'assistant' && (
+                  <div className="flex items-end gap-2">
+                    <Avatar className="flex justify-start items-center">
+                      <AvatarImage
+                        src="/ollama.png"
+                        alt="AI"
+                        width={6}
+                        height={6}
+                        className="object-contain dark:invert"
+                      />
+                    </Avatar>
+                    <span className="bg-accent p-3 rounded-md max-w-xs sm:max-w-2xl overflow-x-auto">
+                      {message.content}
+                      {isLoading &&
+                        messages.indexOf(message) === messages.length - 1 && (
+                          <span
+                            className="animate-pulse"
+                            aria-label="Typing"
                           >
-                            <CodeDisplayBlock
-                              code={part}
-                              lang=""
-                            />
-                          </pre>
-                        )
-                      }
-                    })}
-                    {isLoading &&
-                      messages.indexOf(message) === messages.length - 1 && (
-                        <span
-                          className="animate-pulse"
-                          aria-label="Typing"
-                        >
-                          ...
-                        </span>
-                      )}
-                  </span>
-                </div>
+                            ...
+                          </span>
+                        )}
+                    </span>
+                  </div>
+                )}
+
+              </div>
+            </motion.div>
+          )
+
+        })}
+        {
+          isLoading && (
+            <motion.div
+              layout
+              initial={{ opacity: 0, scale: 1, y: 20, x: 0 }}
+              animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+              exit={{ opacity: 0, scale: 1, y: 20, x: 0 }}
+              transition={{
+                opacity: { duration: 0.1 },
+                layout: {
+                  type: 'spring',
+                  bounce: 0.3,
+                },
+              }}
+              className={cn(
+                'flex flex-col gap-2 p-4 whitespace-pre-wrap',
+                'items-start',
               )}
+            >
+              <div className="flex gap-3 items-center">
+              <div className="flex items-end gap-2">
+              <Avatar className="flex justify-start items-center">
+                <AvatarImage
+                  src="/ollama.png"
+                  alt="AI"
+                  width={6}
+                  height={6}
+                  className="object-contain dark:invert"
+                />
+              </Avatar>
+              <span className="bg-accent p-3 rounded-md max-w-xs sm:max-w-2xl overflow-x-auto">
+                {completion}
+                <span
+                  className="animate-pulse"
+                  aria-label="Typing"
+                >
+                  ...
+                </span>
+              </span>
             </div>
-          </motion.div>
-        ))}
+              </div>
+            </motion.div>
+            
+          )
+        }
         {loadingSubmit && (
           <div className="flex pl-4 pb-4 gap-2 items-center">
             <Avatar className="flex justify-start items-center">
