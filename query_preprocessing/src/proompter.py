@@ -28,6 +28,11 @@ class HackyJsonExtractor:
         self.string = string
         self.pos = 0
 
+    def peek_char(self):
+        if self.pos+1 >= len(self.string):
+            return None
+        return self.string[self.pos+1]
+
     def next_string(self):
         start = None
         end = None
@@ -40,6 +45,11 @@ class HackyJsonExtractor:
                     self.pos += 1
                     continue
 
+            if c == "\\":
+                if self.peek_char() == '"':
+                    self.pos += 2
+                    continue
+                
             if c == '"':
                 if start is None:
                     start = self.pos
