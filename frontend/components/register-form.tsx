@@ -74,7 +74,7 @@ export default function RegisterForm() {
 
 
     return (
-        <Card className="mt-12 w-full shadow-md">
+        <Card className="sm:w-[35%] w-[90%]">
             <CardHeader>
                 <CardTitle>
                     Signup
@@ -85,7 +85,7 @@ export default function RegisterForm() {
             </CardHeader>
             <CardContent>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleOnSubmit)} className="space-y-8 max-w-[380px]">
+                    <form onSubmit={form.handleSubmit(handleOnSubmit)} className="space-y-8">
                         <FormField
                             control={form.control}
                             name="email"
@@ -150,7 +150,7 @@ export default function RegisterForm() {
                             }}
                         />
                         <div className="w-full flex justify-center items-center" >
-                            <Button disabled={isLoading} size={"lg"} type="submit">Submit</Button>
+                            <Button className="w-full" disabled={isLoading} size={"lg"} type="submit">Submit</Button>
                         </div>
                     </form>
                 </Form>

@@ -78,7 +78,7 @@ export default function LoginForm() {
     }
 
     return (
-        <Card className="w-full">
+        <Card className="sm:w-[35%] w-[90%]">
             <CardHeader>
                 <CardTitle>
                     Sign In
@@ -89,7 +89,7 @@ export default function LoginForm() {
             </CardHeader>
             <CardContent>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleOnSubmit)} className="space-y-8 max-w-[380px]">
+                    <form onSubmit={form.handleSubmit(handleOnSubmit)} className="space-y-8 w-full">
                         <FormField
                             control={form.control}
                             name="email"
@@ -127,7 +127,7 @@ export default function LoginForm() {
                             }}
                         />
                         <div className="w-full flex justify-center items-center">
-                            <Button disabled={isLoading} size={"lg"} type="submit">
+                            <Button className="w-full" disabled={isLoading} size={"lg"} type="submit">
                                 Submit
                             </Button>
                         </div>
