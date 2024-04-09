@@ -6,9 +6,10 @@ import CodeDisplayBlock from '../code-display-block'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { ChatProps } from './chat'
 import { Message } from 'ai'
+import { MessageType } from '@/lib/message-type'
 
 interface ChatListProps {
-  messages:Message[];
+  messages:MessageType[];
   completion:string;
   isLoading:boolean;
   loadingSubmit?: boolean;
@@ -67,7 +68,6 @@ export default function ChatList({
     >
       <div className="w-full flex flex-col overflow-x-hidden overflow-y-hidden min-h-full justify-end">
         {messages.map((message, index) => {
-          console.log(message.content);
           return (
             <motion.div
               key={index}

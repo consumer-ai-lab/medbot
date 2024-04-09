@@ -13,6 +13,9 @@ import { useToast } from '../ui/use-toast'
 import { getSelectedModel } from '@/lib/model-helper'
 import { UserType } from '@/lib/user-type'
 import { Model } from '@/Model'
+import { v4 } from 'uuid';
+import axios from 'axios';
+import { MessageType } from '@/lib/message-type'
 
 interface ChatClientProps {
 	defaultLayout?: number[] | undefined
@@ -22,25 +25,8 @@ interface ChatClientProps {
 	user: UserType;
 }
 
-const messagesStub: Message[] = [
-	{
-		id: 'abc',
-		content: 'Hello, this is your friendly ai assistant',
-		role: 'assistant'
-	},
-	{
-		id: 'def',
-		content: 'Hey AI, What can you do for me?',
-		role: 'user'
-	},
-	{
-		id: 'ghi',
-		content: 'I can help you with anything you need',
-		role: 'assistant'
-	},
-]
 
-const chatId = 'abcdefg';
+
 
 export function ChatClient({
 	defaultLayout = [30, 160],
@@ -48,13 +34,14 @@ export function ChatClient({
 	navCollapsedSize = 10,
 	user
 }: ChatClientProps) {
-	const {toast}=useToast();
+	const { toast } = useToast();
 	const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed)
 	const [isMobile, setIsMobile] = useState(false);
 	const [loadingSubmit, setLoadingSubmit] = React.useState(false)
-	const [messages, setMessages] = useState<Message[]>(messagesStub);
-	const [chatId,setChatId]=useState<string>('')
-;
+	const [messages, setMessages] = useState<MessageType[]>([]);
+	const [threadId, setThreadId] = useState<string>('');
+	const [newThreadId, setNewThreadId] = useState<string>('');
+
 	const {
 		input,
 		setInput,
@@ -65,13 +52,25 @@ export function ChatClient({
 		stop,
 	} = useCompletion({
 		api: '/api/chat/generate',
-		onFinish(prompt,completion) {
-            setMessages((current) => [...current, {
-				id:'todo',
-				content: completion,
-				role: 'assistant'
-			}]);
-        },
+		onFinish(prompt, completion) {
+			const axiosClient = axios.create({
+				withCredentials: true,
+			})
+			if (threadId.length === 0) {
+				setThreadId(newThreadId);
+				axiosClient.post('/api/chat/thread', {
+					'thread_id': newThreadId,
+				}).then((resp) => {
+					setMessages(resp.data);
+				})
+			} else {
+				axiosClient.post('/api/chat/thread', {
+					'thread_id': threadId,
+				}).then((resp) => {
+					setMessages(resp.data);
+				})
+			}
+		},
 		onResponse: (response) => {
 			if (response) {
 				setInput('')
@@ -81,30 +80,41 @@ export function ChatClient({
 		onError: (error) => {
 			setLoadingSubmit(false)
 			toast({
-				variant:"destructive",
-				description:'An error occurred. Please try again.'
+				variant: "destructive",
+				description: 'An error occurred. Please try again.'
 			})
 		},
 		body: {
 			model: getSelectedModel() as Model,
-			thread_id: 'icecreamcupcakewithmilk',
-			// TODO: make enums for these
-			embeddings_model: "gemini-pro",
-			strategy: "medical-database",
+			thread_id: threadId.length > 0 ? threadId : newThreadId,
 		}
 	})
 
 	function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-        const userMessage: Message = {
-            role: "user",
-            content: input,
-			id: 'sd'
-        };
-        setMessages((current) => [...current, userMessage]);
-        handleSubmit(e);
-    }
+		const userMessage: MessageType = {
+			role: "user",
+			content: input,
+		};
+		setMessages((current) => [...current, userMessage]);
+		handleSubmit(e);
+	}
 
-	
+	useEffect(() => {
+		setNewThreadId(v4())
+	}, [input])
+
+	useEffect(() => {
+		const axiosClient = axios.create({
+			withCredentials: true,
+		})
+		axiosClient.post('/api/chat/thread', {
+			'thread_id': threadId,
+		}).then((resp) => {
+			setMessages(resp.data);
+		})
+
+	}, [threadId])
+
 	useEffect(() => {
 		const checkScreenWidth = () => {
 			setIsMobile(window.innerWidth <= 640)
@@ -159,9 +169,9 @@ export function ChatClient({
 				<Sidebar
 					user={user}
 					isCollapsed={isCollapsed || isMobile}
-					messages={messages}
 					isMobile={isMobile}
-					chatId={chatId}
+					threadId={threadId}
+					setThreadId={setThreadId}
 				/>
 			</ResizablePanel>
 			<ResizableHandle
@@ -175,7 +185,8 @@ export function ChatClient({
 				<Chat
 					user={user}
 					completion={completion}
-					chatId={chatId}
+					threadId={threadId}
+					setThreadId={setThreadId}
 					messages={messages}
 					input={input}
 					handleInputChange={handleInputChange}
