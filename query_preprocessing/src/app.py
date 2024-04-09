@@ -11,7 +11,7 @@ from langchain_core.output_parsers import StrOutputParser
 from dotenv import find_dotenv, load_dotenv
 from typing import List
 
-from .gaurdrails import relevance_chain
+from .guard_rails import relevance_chain
 from .types import (
     ApiQuery,
     QaQuery,
