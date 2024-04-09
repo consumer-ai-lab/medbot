@@ -10,12 +10,14 @@ import { Sidebar } from '../sidebar'
 import Chat from './chat'
 import { useCompletion, type Message } from 'ai/react'
 import { useToast } from '../ui/use-toast'
-import { getSelectedModel } from '@/lib/model-helper'
 import { UserType } from '@/lib/user-type'
-import { Model } from '@/Model'
 import { v4 } from 'uuid';
 import axios from 'axios';
 import { MessageType } from '@/lib/message-type'
+import { Model } from '@/lib/model-enum'
+import { getSelectedEmbeddingModel, getSelectedModel, getSelectedStrategy } from '@/lib/local-storage-helper'
+import { EmbeddingModel } from '@/lib/embedding-model-enum'
+import { Strategy } from '@/lib/strategy-enum'
 
 interface ChatClientProps {
 	defaultLayout?: number[] | undefined
@@ -87,6 +89,8 @@ export function ChatClient({
 		body: {
 			model: getSelectedModel() as Model,
 			thread_id: threadId.length > 0 ? threadId : newThreadId,
+			embeddings_model: getSelectedEmbeddingModel() as EmbeddingModel,
+			strategy:getSelectedStrategy() as Strategy,
 		}
 	})
 
