@@ -7,7 +7,7 @@ from dotenv import load_dotenv, find_dotenv
 import pprint
 
 from .create_llm import CreateLLM
-from .types import Model, QaQuery
+from .types import Model, QaQuery, RelevanceResponse
 
 load_dotenv(find_dotenv())
 
@@ -42,8 +42,7 @@ Prompt: {prompt}
 Output: 
 """
 guard_prompt_template = PromptTemplate(
-    template=guard_prompt,
-    input_variables=["context", "prompt"]
+    template=guard_prompt, input_variables=["context", "prompt"]
 )
 
 guard_prompt2 = """
@@ -75,9 +74,9 @@ Prompt: {prompt}
 AI response:
 """
 guard_prompt2_template = PromptTemplate(
-    template=guard_prompt2,
-    input_variables=["prompt"]
+    template=guard_prompt2, input_variables=["prompt"]
 )
+
 
 def guard_chain1(llm):
     return (
@@ -94,6 +93,8 @@ def guard_chain1(llm):
         | printer
         | StrOutputParser()
     )
+
+
 def guard_chain2(llm):
     return (
         RunnableParallel(prompt=lambda x: x["prompt"])
@@ -110,20 +111,30 @@ def guard_chain2(llm):
         | StrOutputParser()
     )
 
-def is_relevent(llm, query: QaQuery):
-        # chain = guard_chain1(llm)
-        chain = guard_chain2(llm)
 
-        resp = chain.invoke(query.dict())
+def relevance_chain(llm):
+    chain = guard_chain1(llm)
+    # chain = guard_chain2(llm)
+    return (
+        chain
+        | RunnableLambda(lambda x: json.loads(x))
+        | RunnableLambda(lambda x: RelevanceResponse(**x))
+    )
 
-        try:
-            resp = json.loads(resp)
-            match resp["related"]:
-                case "YES" | "MAYBE":
-                    return True
-                case "NO" | "ILLEGAL":
-                    return False
-                case _:
-                    return True
-        except Exception:
-            return True
+
+def is_relevant(llm, query: QaQuery):
+    chain = relevance_chain(llm)
+
+    resp = chain.invoke(query.dict())
+
+    try:
+        resp = json.loads(resp)
+        match resp["related"]:
+            case "YES" | "MAYBE":
+                return True
+            case "NO" | "ILLEGAL":
+                return False
+            case _:
+                return True
+    except Exception:
+        return True

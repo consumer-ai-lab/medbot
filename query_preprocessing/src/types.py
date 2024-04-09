@@ -61,6 +61,24 @@ class QaQuery(pydantic.BaseModel):
     prompt: str
     summary: str
 
+class Related(str, enum.Enum):
+    YES = "YES"
+    NO = "NO"
+    MAYBE = "MAYBE"
+    ILLEGAL = "ILLEGAL"
+
+class RelevanceResponse(pydantic.BaseModel):
+    related: Related
+    reason: str
+
+    def is_related(self):
+        match self.related:
+            case "YES" | "MAYBE":
+                return True
+            case "NO" | "ILLEGAL":
+                return False
+            case _:
+                return True
 
 class QaResponse(pydantic.BaseModel):
     class Type(str, enum.Enum):
