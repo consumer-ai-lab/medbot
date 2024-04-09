@@ -5,36 +5,19 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from dotenv import find_dotenv, load_dotenv
-from .types import Message, MessageRole
 from typing import List
 
 import os
 import pprint
+
+from .types import Message, MessageRole
+from .proompts import summarization_prompt_template
+from .proompter import printer
+
 # set_debug(True)
 
 load_dotenv(find_dotenv())
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-
-
-def printer_print(x):
-    print()
-    pprint.pprint(x)
-    print()
-    return x
-
-
-printer = RunnableLambda(printer_print)
-
-summarization_prompt_template = ChatPromptTemplate.from_messages(
-    [
-        MessagesPlaceholder(variable_name="history"),
-        SystemMessage(
-            content="Summarise the chat. include as much detail as much details in the least words possible such that it is easy to understand the context."
-            # content="You are an AI assistant with the capability to process summaries of conversations and related follow-up questions. Your task is to rephrase a given follow-up question so it can be understood as a standalone question, without needing additional context from the conversation summary. Ensure the rephrased question maintains the essence and specificity of the original query, allowing for clear and concise communication. Given below is the example of what kind of response is expected"
-            # content="You are an AI assistant specialized in reading transcripts of conversation between human and AI. Your primary task is to provide brief, accurate summaries of these transcripts, ensuring no important details are omitted."
-        ),
-    ]
-)
 
 
 def summary_chain(llm):
@@ -79,8 +62,6 @@ class ChatSummaryManager:
         return chain.invoke({"history": history})
 
 
-def get_chat_summary_manager(
-    llm
-) -> ChatSummaryManager:
+def get_chat_summary_manager(llm) -> ChatSummaryManager:
     llm = llm
     return ChatSummaryManager(llm=llm)
