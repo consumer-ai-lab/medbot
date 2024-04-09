@@ -33,7 +33,7 @@ class CreateLLM:
             case Model.ollama_llama2 | Model.ollama_llama2_uncensored:
                 llm = Ollama(
                     base_url=os.getenv("OLLAMA_URL"),
-                    model=self.model.value + ":vram-34",
+                    model=self.model.model() + ":vram-34",
                     temperature=self.temp,
                 )
             case Model.groq_mistral_8x7b | Model.groq_llama2_70b | Model.groq_gemma_7b:
