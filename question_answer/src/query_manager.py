@@ -152,35 +152,19 @@ chatbot_promt_template = PromptTemplate(
 )
 
 question_rephrase_prompt = """
-System: you are an AI. your job is to rephrase the question given below with given context (if required) such that it is possible to answer it without any context. do not change the meaning of question. write the question as if it was written by the user. DO NOT answer the question. just rephrase it.
+### System: you are an AI. your job is to rephrase the question given below with given context (if required) such that it is possible to answer it without any context. do not change the meaning of question. write the question as if it was written by the user. DO NOT answer the question. just rephrase it. output the response in json format as a single follows {{ "question": <REPHRASED QUESTION>, "remarks": <ANY OTHER REMARKS (OPTIONAL)> }}
 
-Context:
-user and ai are talking about mountains.
+### Context: user wants to know about brain damage.
+### Question: what is it?
+### Rephrased Question: {{ "question": "What is Brain Damage?", "remarks": "Note: Treating brain damage is a very serious issue." }}
 
-Question:
-what is it?
+### Context: None
+### Question: What is fractal?
+### Rephrased Question: {{ "question": "What are Fractals?" }}
 
-Rephrased Question:
-What is a mountain?
-
-
-Context:
-None
-
-Question:
-What is fractal?
-
-Rephrased Question:
-What are Fractals?
-
-
-Context:
-{summary}
-
-Question:
-{prompt}
-
-Rephrased Question:
+### Context: {summary}
+### Question: {prompt}
+### Rephrased Question: 
 """
 question_rephrase_prompt_template = PromptTemplate(
     template=question_rephrase_prompt, input_variables=["summary", "prompt"]
@@ -215,6 +199,20 @@ generic_chatbot_promt_template = PromptTemplate(
 )
 
 
+pubmed_query_prompt = """
+System: you are an AI. your job is to generate 3 search queries that are most likely to get the most relevent results from Pubmed search. Do not change the meaning of query. DO NOT answer the query. you must output it as a list of strings in json format.
+
+Question: My brother has ashtama. how do i make sure he is cured?
+Rephrased Question: ["asthama treatment", "asthama definition", "asthama medication"]
+
+Question: {prompt}
+Rephrased Question: 
+"""
+pubmed_query_prompt_template = PromptTemplate(
+    template=pubmed_query_prompt, input_variables=["prompt"]
+)
+
+
 def printer_print(x):
     print()
     pprint.pprint(x)
@@ -226,8 +224,48 @@ printer = RunnableLambda(printer_print)
 
 
 class QaService:
-    pass
 
+    """ question summary """
+    def question_rephrase_chain(llm):
+        return (
+            question_rephrase_prompt_template
+            | printer
+            | llm
+            | printer
+            | StrOutputParser()
+            | RunnableLambda(lambda x: json.loads(x))
+            | RunnableLambda(lambda x: x["question"])
+        )
+
+    """ context question """
+    def medical_chatbot_prompt_chain(llm):
+        return (
+            chatbot_promt_template
+            | printer
+            | llm
+            | printer
+            | StrOutputParser()
+        )
+
+    """ context question summary """
+    def medical_chatbot_with_history_prompt_chain(llm):
+        return (
+            chatbot_with_history_promt_template
+            | printer
+            | llm
+            | printer
+            | StrOutputParser()
+        )
+
+    """ question summary """
+    def generic_chatbot_prompt_chain(llm):
+        return (
+            generic_chatbot_promt_template
+            | printer
+            | llm
+            | printer
+            | StrOutputParser()
+        )
 
 class VectorDbQaService(QaService):
     def qa_chain(self, llm, embeddings):
@@ -238,38 +276,79 @@ class VectorDbQaService(QaService):
         )
 
         return (
-            # RunnableParallel(
-            #     prompt=(
-            #         question_rephrase_prompt_template
-            #         | printer
-            #         | llm
-            #         | StrOutputParser()
-            #     ),
-            # )
             printer
             | RunnableParallel(
-                prompt=lambda x: x["prompt"],
+                prompt=self.question_rephrase_chain(llm),
                 summary=lambda x: x["summary"],
-                context=lambda x: [
-                    Document(page_content=PubmedQueryRun().invoke(x["prompt"]))
-                ]
-                + db.as_retriever().invoke(x["prompt"]),
             )
             | printer
             | RunnableParallel(
-                # response=(chatbot_promt_template | printer | llm | StrOutputParser()),
-                response=(
-                    chatbot_with_history_promt_template
-                    | printer
-                    | llm
-                    | printer
-                    | StrOutputParser()
-                ),
+                prompt=lambda x: x["prompt"],
+                summary=lambda x: x["summary"],
+                context=lambda x: db.as_retriever().invoke(x["prompt"]),
+            )
+            | printer
+            | RunnableParallel(
+                response=self.medical_chatbot_prompt_chain(llm),
                 context=lambda x: x["context"],
             )
             | printer
         )
 
+
+class PubmedQaService(QaService):
+    def genrate_search_queries_chain(self, llm):
+        return (
+            RunnableParallel(
+                questions=(
+                    # search_query_prompt_template
+                    pubmed_query_prompt_template
+                    | llm
+                    | StrOutputParser()
+                    | printer
+                    | RunnableLambda(lambda x: json.loads(x))
+                ),
+                prompt=lambda x: x["prompt"],
+            )
+            | printer
+            # | RunnableLambda(lambda x: [x["prompt"]] + x["questions"])
+            | RunnableLambda(lambda x: x["questions"])
+            | printer
+        )
+
+    def pubmed_context_chain(self, llm):
+        return (
+            self.genrate_search_queries_chain(llm)
+            | RunnableEach(
+                bound=(
+                    RunnableParallel(
+                        prompt=lambda x: x,
+                        context=lambda x: Document(page_content=PubmedQueryRun().invoke(x)),
+                    )
+                )
+            )
+        )
+
+    def qa_chain(self, llm, embeddings):
+        return (
+            printer
+            | RunnableParallel(
+                prompt=self.question_rephrase_chain(llm),
+                summary=lambda x: x["summary"],
+            )
+            | printer
+            | RunnableParallel(
+                prompt=lambda x: x["prompt"],
+                summary=lambda x: x["summary"],
+                context=self.pubmed_context_chain(llm),
+            )
+            | printer
+            | RunnableParallel(
+                response=self.medical_chatbot_prompt_chain(llm),
+                context=lambda x: x["context"],
+            )
+            | printer
+        )
 
 class InternetQaService(QaService):
     def __init__(self):
@@ -345,6 +424,7 @@ class InternetQaService(QaService):
                     search_query_prompt_template
                     | llm
                     | StrOutputParser()
+                    | printer
                     | RunnableLambda(lambda x: json.loads(x))
                 ),
                 prompt=lambda x: x["prompt"],
@@ -431,12 +511,7 @@ class InternetQaService(QaService):
     def qa_chain(self, llm, embeddings):
         return (
             RunnableParallel(
-                prompt=(
-                    question_rephrase_prompt_template
-                    | printer
-                    | llm
-                    | StrOutputParser()
-                ),
+                prompt=self.question_rephrase_chain(llm),
                 summary=lambda x: x["summary"],
             )
             | printer
@@ -448,13 +523,7 @@ class InternetQaService(QaService):
             | printer
             | RunnableParallel(
                 context=lambda x: x["context"],
-                response=(
-                    generic_chatbot_promt_template
-                    | printer
-                    | llm
-                    | printer
-                    | StrOutputParser()
-                ),
+                response=self.generic_chatbot_prompt_chain(llm),
             )
         )
 
@@ -467,9 +536,10 @@ def get_response(query: QaQuery) -> str:
     match query.strategy:
         case Strategy.web_search:
             strategy = InternetQaService()
-        # TODO: separate these
-        case Strategy.medical_database | Strategy.pubmed_search:
+        case Strategy.medical_database:
             strategy = VectorDbQaService()
+        case Strategy.pubmed_search:
+            strategy = PubmedQaService()
         case _:
             raise RuntimeError("unimplemented strategy")
 
