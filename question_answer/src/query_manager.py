@@ -231,6 +231,7 @@ def hacky_extract_json_dict(x):
     inside = inside.split("}")[0]
     return "{" + inside + "}"
 
+
 def hacky_extract_json_list(x):
     if "[" not in x:
         raise RuntimeError(f"string does not contain a json object: {x}")
@@ -239,10 +240,10 @@ def hacky_extract_json_list(x):
     inside = inside.split("]")[0]
     return "[" + inside + "]"
 
-class QaService:
 
-    """ prompt summary """
+class QaService:
     def question_rephrase_chain(self, llm):
+        """prompt summary"""
         return (
             question_rephrase_prompt_template
             | printer
@@ -255,18 +256,12 @@ class QaService:
             | RunnableLambda(lambda x: x["question"])
         )
 
-    """ context prompt """
     def medical_chatbot_prompt_chain(self, llm):
-        return (
-            chatbot_promt_template
-            | printer
-            | llm
-            | printer
-            | StrOutputParser()
-        )
+        """context prompt"""
+        return chatbot_promt_template | printer | llm | printer | StrOutputParser()
 
-    """ context prompt summary """
     def medical_chatbot_with_history_prompt_chain(self, llm):
+        """context prompt summary"""
         return (
             chatbot_with_history_promt_template
             | printer
@@ -275,18 +270,14 @@ class QaService:
             | StrOutputParser()
         )
 
-    """ prompt summary """
     def generic_chatbot_prompt_chain(self, llm):
+        """prompt summary"""
         return (
-            generic_chatbot_promt_template
-            | printer
-            | llm
-            | printer
-            | StrOutputParser()
+            generic_chatbot_promt_template | printer | llm | printer | StrOutputParser()
         )
 
-    """ prompt summary """
     def generate_search_queries_chain(self, llm):
+        """prompt summary"""
         return (
             search_query_prompt_template
             | llm
@@ -295,6 +286,7 @@ class QaService:
             | RunnableLambda(hacky_extract_json_list)
             | RunnableLambda(lambda x: json.loads(x))
         )
+
 
 class VectorDbQaService(QaService):
     def qa_chain(self, llm, embeddings):
