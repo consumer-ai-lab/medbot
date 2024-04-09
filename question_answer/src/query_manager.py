@@ -47,7 +47,7 @@ from dotenv import find_dotenv, load_dotenv
 
 from langchain.globals import set_debug
 
-from .types import Model
+from .types import Model, QaQuery
 from .create_llm import CreateLLM
 
 # set_debug(True)
@@ -73,11 +73,11 @@ Context: {context}
 
 Summary: {summary}
 
-Question: {question}
+Question: {prompt}
 """
 chatbot_long_prompt_template = PromptTemplate(
     template=chatbot_long_prompt,
-    input_variables=["context", "question", "summary"],
+    input_variables=["context", "prompt", "summary"],
 )
 
 
@@ -86,13 +86,13 @@ Summary: {summary}
 
 Context: {context}
 
-Question: {question}
+Question: {prompt}
 
 System: provided the summary, context and a question, answer it using the given context. you may offer medical advice. do not deviate from the given context. when context is not related to the question, just say that the context does not have the answer to the question.
 """
 chatbot_with_history_promt_template = PromptTemplate(
     template=chatbot_with_history_prompt,
-    input_variables=["context", "question", "summary"],
+    input_variables=["context", "prompt", "summary"],
 )
 
 chatbot_prompt = """
@@ -133,12 +133,12 @@ No context provided
 {context}
 
 ### Question:
-{question}
+{prompt}
 
 ### AI:
 """
 chatbot_promt_template = PromptTemplate(
-    template=chatbot_prompt, input_variables=["context", "question"]
+    template=chatbot_prompt, input_variables=["context", "prompt"]
 )
 
 question_rephrase_prompt = """
@@ -168,12 +168,12 @@ Context:
 {summary}
 
 Question:
-{question}
+{prompt}
 
 Rephrased Question:
 """
 question_rephrase_prompt_template = PromptTemplate(
-    template=question_rephrase_prompt, input_variables=["summary", "question"]
+    template=question_rephrase_prompt, input_variables=["summary", "prompt"]
 )
 
 search_query_prompt = """
@@ -184,32 +184,25 @@ Question: what is the tallest one called?
 Rephrased Question: ["tallest mountains in the world", "mountain heights", "highest peaks in the world"]
 
 Context: {summary}
-Question: {question}
+Question: {prompt}
 Rephrased Question: 
 """
 search_query_prompt_template = PromptTemplate(
-    template=search_query_prompt, input_variables=["summary", "question"]
+    template=search_query_prompt, input_variables=["summary", "prompt"]
 )
 
 generic_chatbot_prompt = """
 Context: {context}
 
-Question: {question}
+Question: {prompt}
 
 System: you are a helpful and smart AI chatbot. provided the context and a question, answer it using the given context. do not deviate from the given context. give detailed and helpful answers.
 
 AI:
 """
 generic_chatbot_promt_template = PromptTemplate(
-    template=generic_chatbot_prompt, input_variables=["context", "question"]
+    template=generic_chatbot_prompt, input_variables=["context", "prompt"]
 )
-
-
-class ApiQuery(pydantic.BaseModel):
-    model: Model
-    question: str
-    summary: str
-
 
 def printer_print(x):
     print()
@@ -250,7 +243,7 @@ class VectorDbQaService(QaService):
 
         return (
             # RunnableParallel(
-            #     question=(
+            #     prompt=(
             #         question_rephrase_prompt_template
             #         | printer
             #         | llm
@@ -259,12 +252,12 @@ class VectorDbQaService(QaService):
             # )
             # | printer
             RunnableParallel(
-                question=lambda x: x["question"],
+                prompt=lambda x: x["prompt"],
                 summary=lambda x: x['summary'],
                 context=lambda x: [
-                    # Document(page_content=PubmedQueryRun().invoke(x["question"]))
+                    # Document(page_content=PubmedQueryRun().invoke(x["prompt"]))
                 ]
-                + self.db.as_retriever().invoke(x["question"]),
+                + self.db.as_retriever().invoke(x["prompt"]),
             )
             | printer
             | RunnableParallel(
@@ -275,9 +268,9 @@ class VectorDbQaService(QaService):
             | printer
         )
 
-    def get_response(self, question: str, model: Model, summary: str):
+    def get_response(self, prompt: str, model: Model, summary: str):
         bot = self.qa_chain(model)
-        resp = bot.invoke({"question": question, "summary": summary})
+        resp = bot.invoke({"prompt": prompt, "summary": summary})
         return resp
 
 
@@ -356,10 +349,10 @@ class InternetQaService(QaService):
                     | StrOutputParser()
                     | RunnableLambda(lambda x: json.loads(x))
                 ),
-                question=lambda x: x["question"],
+                prompt=lambda x: x["prompt"],
             )
             | printer
-            | RunnableLambda(lambda x: [x["question"]] + x["questions"])
+            | RunnableLambda(lambda x: [x["prompt"]] + x["questions"])
             | printer
         )
 
@@ -405,17 +398,17 @@ class InternetQaService(QaService):
 
         return (
             RunnableParallel(
-                question=lambda x: x["question"],
+                prompt=lambda x: x["prompt"],
                 pages=(
                     self.generate_questions_chain(llm)
                     | RunnableEach(
                         bound=(
                             RunnableParallel(
-                                question=lambda x: x,
+                                prompt=lambda x: x,
                                 urls=self.search_engine_chain(),
                             )
                             | RunnableParallel(
-                                question=lambda x: x["question"],
+                                prompt=lambda x: x["prompt"],
                                 pages=self.url_content_extraction_chain(
                                     InternetQaService.UrlExtractionMethod.CHROME
                                 ),
@@ -427,7 +420,7 @@ class InternetQaService(QaService):
                 ),
             )
             | printer
-            | RunnableLambda(lambda x: retriever(x["pages"]).invoke(x["question"]))
+            | RunnableLambda(lambda x: retriever(x["pages"]).invoke(x["prompt"]))
             | RunnableLambda(
                 lambda x: [
                     Document(page_content=d.page_content, metadata=d.metadata)
@@ -443,7 +436,7 @@ class InternetQaService(QaService):
 
         return (
             RunnableParallel(
-                question=(
+                prompt=(
                     question_rephrase_prompt_template
                     | printer
                     | llm
@@ -453,7 +446,7 @@ class InternetQaService(QaService):
             )
             | printer
             | RunnableParallel(
-                question=lambda x: x["question"],
+                prompt=lambda x: x["prompt"],
                 summary=lambda x: x["summary"],
                 context=self.web_context_chain(llm, embeddings),
             )
@@ -464,9 +457,9 @@ class InternetQaService(QaService):
             | StrOutputParser()
         )
 
-    def get_response(self, question: str, model: Model, summary: str):
+    def get_response(self, prompt: str, model: Model, summary: str):
         bot = self.qa_chain(model)
-        resp = bot.invoke({"question": question, "summary": summary})
+        resp = bot.invoke({"prompt": prompt, "summary": summary})
         return resp
 
 
@@ -475,7 +468,7 @@ class QueryManager:
         self.connection_string = os.getenv("CONNECTION_STRING")
         self.collection_name = os.getenv("CONNECTION_NAME")
 
-    def get_response(self, query: ApiQuery) -> str:
+    def get_response(self, query: QaQuery) -> str:
         chain = VectorDbQaService(self.collection_name, self.connection_string)
         # chain = InternetQaService()
         res = chain.get_response(**query.dict())
