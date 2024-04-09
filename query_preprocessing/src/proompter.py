@@ -83,8 +83,8 @@ class HackyJsonExtractor:
         if "[" not in self.string:
             raise RuntimeError(f"string does not contain a json object: {self.string}")
         
-        x0, x1 = self.string.split("[")
-        inside, _ = x1.split("]")
+        x0, x1 = self.string.split("[")[:2]
+        inside, _ = x1.split("]")[:2]
         self.string = inside
         self.pos = 0
         strings = []
@@ -98,8 +98,8 @@ class HackyJsonExtractor:
         if "{" not in self.string:
             raise RuntimeError(f"string does not contain a json object: {self.string}")
         
-        x0, x1 = self.string.split("{")
-        inside, _ = x1.split("}")
+        x0, x1 = self.string.split("{")[:2]
+        inside, _ = x1.split("}")[:2]
         self.string = inside
         self.pos = 0
 
