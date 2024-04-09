@@ -13,6 +13,8 @@ import { useToast } from '../ui/use-toast'
 import { getSelectedModel } from '@/lib/model-helper'
 import { UserType } from '@/lib/user-type'
 import { Model } from '@/Model'
+import { v4 } from 'uuid';
+import { set } from 'react-hook-form'
 
 interface ChatClientProps {
 	defaultLayout?: number[] | undefined
@@ -40,7 +42,6 @@ const messagesStub: Message[] = [
 	},
 ]
 
-const chatId = 'abcdefg';
 
 export function ChatClient({
 	defaultLayout = [30, 160],
@@ -53,8 +54,9 @@ export function ChatClient({
 	const [isMobile, setIsMobile] = useState(false);
 	const [loadingSubmit, setLoadingSubmit] = React.useState(false)
 	const [messages, setMessages] = useState<Message[]>(messagesStub);
-	const [chatId,setChatId]=useState<string>('')
-;
+	const [threadId,setThreadId]=useState<string>('');
+	const [newThreadId,setNewThreadId]=useState<string>('');
+
 	const {
 		input,
 		setInput,
@@ -71,6 +73,9 @@ export function ChatClient({
 				content: completion,
 				role: 'assistant'
 			}]);
+			if(threadId.length===0){
+				setThreadId(newThreadId);
+			}
         },
 		onResponse: (response) => {
 			if (response) {
@@ -87,10 +92,7 @@ export function ChatClient({
 		},
 		body: {
 			model: getSelectedModel() as Model,
-			thread_id: 'icecreamcupcakewithmilk',
-			// TODO: make enums for these
-			embeddings_model: "gemini-pro",
-			strategy: "medical-database",
+			thread_id: threadId.length>0?threadId:newThreadId,
 		}
 	})
 
@@ -104,6 +106,9 @@ export function ChatClient({
         handleSubmit(e);
     }
 
+	useEffect(()=>{
+		setNewThreadId(v4())
+	},[input])
 	
 	useEffect(() => {
 		const checkScreenWidth = () => {
@@ -161,7 +166,8 @@ export function ChatClient({
 					isCollapsed={isCollapsed || isMobile}
 					messages={messages}
 					isMobile={isMobile}
-					chatId={chatId}
+					threadId={threadId}
+					setThreadId={setThreadId}
 				/>
 			</ResizablePanel>
 			<ResizableHandle
@@ -175,7 +181,8 @@ export function ChatClient({
 				<Chat
 					user={user}
 					completion={completion}
-					chatId={chatId}
+					threadId={threadId}
+					setThreadId={setThreadId}
 					messages={messages}
 					input={input}
 					handleInputChange={handleInputChange}

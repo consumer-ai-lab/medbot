@@ -1,6 +1,4 @@
 'use client'
-
-import { useLocalStorageData } from '@/app/hooks/useLocalStorageData'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Message } from 'ai/react'
@@ -26,76 +24,48 @@ import {
 } from './ui/dropdown-menu'
 import UserSettings from './user-settings'
 import { UserType } from '@/lib/user-type'
+import buildAxiosClient from '@/api/build-axios-client'
 
 interface SidebarProps {
   isCollapsed: boolean
   messages: Message[]
   onClick?: () => void
   isMobile: boolean
-  chatId: string
   user: UserType
+  threadId?: string
+  setThreadId: (threadId: string) => void;
+}
+
+
+const selectedThreadStub='chat1'
+
+type ThreadType={
+  title:string;
+  id:string;
 }
 
 export function Sidebar({
-  messages,
   isCollapsed,
   isMobile,
-  chatId,
+  threadId,
+  setThreadId,
   user
 }: SidebarProps) {
-  const [localChats, setLocalChats] = useState<
-    { chatId: string; messages: Message[] }[]
-  >([])
-  const localChatss = useLocalStorageData('chat_', [])
-  const [selectedChatId, setSselectedChatId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [allThreads, setAllThreads] = useState<ThreadType[]>([]);
 
   useEffect(() => {
-    if (chatId) {
-      setSselectedChatId(chatId)
-    }
-
-    const handleStorageChange = async () => {
-      setLocalChats(await getLocalstorageChats())
-    }
-    handleStorageChange()
-    window.addEventListener('storage', handleStorageChange)
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-    }
-  }, [])
-
-  // TODO: Return threads and handle messages requirement
-  const getLocalstorageChats = async (): Promise<
-    {
-      chatId: string
-      messages: Message[]
-    }[]
-  > => {
-    try {
-      const chats = localChatss
-
-      console.log(chats)
-      if (chats.length === 0) {
-        setIsLoading(false)
+    axios.get('/api/chat/get-threads',{withCredentials:true}).then((resp:any)=>{
+      console.log(resp.data);
+      if(resp.data && resp.data.length>0){
+        setAllThreads(resp.data.reverse());
       }
-    } catch (e) {
-      console.log('Sidebar fetch error occured')
-    } finally {
-      setIsLoading(false)
-    }
+    })
+    setIsLoading(false)
+  }, [threadId])
 
-    // Map through the chats and return an object with chatId and messages
-    // const chatObjects = chats.map((chat) => {
-    //   const item = localStorage.getItem(chat)
-    //   return item
-    //     ? { chatId: chat, messages: JSON.parse(item) }
-    //     : { chatId: '', messages: [] }
-    // })
 
-    return []
-  }
 
   // TODO: Delete handler
   const handleDeleteChat = (chatId: string) => {
@@ -111,9 +81,7 @@ export function Sidebar({
       <div className=" flex flex-col justify-between p-2 max-h-fit overflow-y-auto">
         <Button
           onClick={() => {
-            router.push('/chat')
-            // Clear messages
-            messages.splice(0, messages.length)
+            setThreadId('')
           }}
           variant="ghost"
           className="flex justify-between w-full h-14 text-sm xl:text-lg font-normal items-center "
@@ -138,26 +106,26 @@ export function Sidebar({
 
         <div className="flex flex-col pt-10 gap-2">
           <p className="pl-4 text-xs text-muted-foreground">Your chats</p>
-          {localChats.length > 0 && (
-            <div>
-              {localChats.map(({ chatId, messages }, index) => (
-                <Link
-                  key={index}
-                  href={`/${chatId.substr(5)}`}
+          {allThreads.length > 0 && (
+            <div className='flex flex-col gap-4'>
+              {allThreads.map(({ title, id }) => (
+                <div
+                  key={id}
+                  onClick={() => setThreadId(id)}
                   className={cn(
                     {
                       [buttonVariants({ variant: 'secondaryLink' })]:
-                        chatId.substring(5) === selectedChatId,
+                        id === threadId,
                       [buttonVariants({ variant: 'ghost' })]:
-                        chatId.substring(5) !== selectedChatId,
+                        id !== threadId,
                     },
-                    'flex justify-between w-full h-14 text-base font-normal items-center ',
+                    'flex justify-between w-full h-14 text-base font-normal items-center',
                   )}
                 >
                   <div className="flex gap-3 items-center truncate">
                     <div className="flex flex-col">
                       <span className="text-xs font-normal ">
-                        {messages.length > 0 ? messages[0].content : ''}
+                        {title.length > 0 ? title : ''}
                       </span>
                     </div>
                   </div>
@@ -197,7 +165,7 @@ export function Sidebar({
                               <Button variant="outline">Cancel</Button>
                               <Button
                                 variant="destructive"
-                                onClick={() => handleDeleteChat(chatId)}
+                                onClick={() => handleDeleteChat(id)}
                               >
                                 Delete
                               </Button>
@@ -207,7 +175,7 @@ export function Sidebar({
                       </Dialog>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </Link>
+                </div>
               ))}
             </div>
           )}
