@@ -65,29 +65,29 @@ async def get_ai_message(
         query.thread_id, Message(role=MessageRole.user, content=query.prompt)
     )
 
-    summarizer = SummaryProompter()
-    summary = summarizer.get_summary(llm, chat_history)
-
-    qa_query = QaQuery(**(query.dict() | {"summary": summary}))
-    relevance = RelevenceProompter()
-    guard_chain = relevance.relevance_chain(llm)
-    resp = guard_chain.invoke(qa_query.dict())
-    if not resp.is_related():
-        resp = QaResponse(
-            **{
-                "type": QaResponse.Type.REJECTED,
-                "response": resp.reason,
-            }
-        )
-
-        chat_manager.add_message(
-            query.thread_id,
-            Message(role=MessageRole.assistant, content=resp.response),
-        )
-
-        return StreamingResponse(generator(resp), media_type="text/event-stream")
-
     try:
+        summarizer = SummaryProompter()
+        summary = summarizer.get_summary(llm, chat_history)
+
+        qa_query = QaQuery(**(query.dict() | {"summary": summary}))
+        relevance = RelevenceProompter()
+        guard_chain = relevance.relevance_chain(llm)
+        resp = guard_chain.invoke(qa_query.dict())
+        if not resp.is_related():
+            resp = QaResponse(
+                **{
+                    "type": QaResponse.Type.REJECTED,
+                    "response": resp.reason,
+                }
+            )
+
+            chat_manager.add_message(
+                query.thread_id,
+                Message(role=MessageRole.assistant, content=resp.response),
+            )
+
+            return StreamingResponse(generator(resp), media_type="text/event-stream")
+
         response = requests.post(
             "http://qa-service:8000/get-ai-response", json=qa_query.dict()
         )
