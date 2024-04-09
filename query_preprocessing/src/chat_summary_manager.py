@@ -1,23 +1,15 @@
 import google.generativeai as genai
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from langchain_core.runnables import RunnableLambda, RunnableParallel
+from langchain_core.runnables import RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.documents import Document
-
-from langchain.globals import set_debug
-import os
 from dotenv import find_dotenv, load_dotenv
-import pprint
-import enum
-import pydantic
+from .types import Message, MessageRole
 from typing import List
-import json
 
-from .create_llm import CreateLLM
-from .types import Model, Message, MessageRole
-
+import os
+import pprint
 # set_debug(True)
 
 load_dotenv(find_dotenv())
@@ -79,9 +71,7 @@ def summary_chain(llm):
 
 
 class ChatSummaryManager:
-    def __init__(self, model, temperature, llm):
-        self.model = model
-        self.temperature = temperature
+    def __init__(self, llm):
         self.llm = llm
 
     def summarize_chats(self, history: List[Message]) -> str:
@@ -90,7 +80,7 @@ class ChatSummaryManager:
 
 
 def get_chat_summary_manager(
-    model: Model, temperature: float = 0.5
+    llm
 ) -> ChatSummaryManager:
-    llm = CreateLLM(model=model, temp=temperature).llm
-    return ChatSummaryManager(model=model, temperature=temperature, llm=llm)
+    llm = llm
+    return ChatSummaryManager(llm=llm)

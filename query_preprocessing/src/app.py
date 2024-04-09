@@ -1,6 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from .security import get_current_user,UserBase
 import requests
 import google.generativeai as genai
 from langchain.prompts import PromptTemplate
@@ -44,28 +45,25 @@ def root():
 
 
 @app.post("/generate")
-async def get_ai_message(query: ApiQuery):
-    # print(query)
-    llm = CreateLLM(query.model).llm
+async def get_ai_message(query: ApiQuery,current_user: UserBase=Depends(get_current_user)):
+    # llm = CreateLLM(query.model).getModel()
 
-    chat_manager = get_redis_manager(query.user_id)
+    chat_manager = get_redis_manager(current_user.user_id)
     if not chat_manager.has_thread(query.thread_id):
-        # TODO: get the llm to generate a title
         chat_manager.add_thread(
             ChatThread(id=query.thread_id, title=query.prompt)
         )
-
     chat_history = chat_manager.get_chat(query.thread_id)
 
     chat_manager.add_message(
         query.thread_id, Message(role=MessageRole.user, content=query.prompt)
     )
 
-    summary_manager = get_chat_summary_manager(query.model, temperature=0.2)
+    # TODO
+    # summary_manager = get_chat_summary_manager(llm)
+    # summary = summary_manager.summarize_chats(history=chat_history)
 
-    summary = summary_manager.summarize_chats(history=chat_history)
-
-    qa_query = QaQuery(**(query.dict() | {"summary": "something"}))
+    qa_query = QaQuery(**(query.dict() | {"summary": "no previous chat history"}))
     # qa_query = QaQuery(**(query.dict()))
     # if not is_relevent(llm, qa_query):
     if True:
@@ -77,6 +75,10 @@ async def get_ai_message(query: ApiQuery):
         )
 
         # TODO: add the message to the chat history
+        chat_manager.add_message(
+            query.thread_id,
+            Message(role=MessageRole.assistant, content=resp.response),
+        )
 
         async def generator():
             for chunk in resp.response.split():
@@ -112,15 +114,16 @@ async def get_ai_message(query: ApiQuery):
 
 
 @app.post("/get-threads")
-def threads(user_id: str) -> List[ChatThread]:
-    chat_manager = get_redis_manager(user_id)
+def threads(current_user: UserBase=Depends(get_current_user)) :
+    chat_manager = get_redis_manager(current_user.user_id)
     threads = chat_manager.get_threads()
     return threads
 
 
+
 @app.post("/thread")
-def thread(query: ApiThreadQuery) -> List[Message]:
-    chat_manager = get_redis_manager(query.user_id)
+def thread(query: ApiThreadQuery,current_user: UserBase=Depends(get_current_user)) -> List[Message]:
+    chat_manager = get_redis_manager(current_user.user_id)
     chat_history = chat_manager.get_chat(query.thread_id)
     return chat_history
 

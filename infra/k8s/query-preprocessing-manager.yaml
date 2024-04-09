@@ -35,6 +35,21 @@ spec:
                 secretKeyRef:
                   name: medbot-secret
                   key: GROQ_API_KEY
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: SECRET_KEY
+            - name: ALGORITHM
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: ALGORITHM
+            - name: ACCESS_TOKEN_EXPIRE_MINUTES
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: ACCESS_TOKEN_EXPIRE_MINUTES
             - name: REDIS_HOST
               value: redis-service
 ---

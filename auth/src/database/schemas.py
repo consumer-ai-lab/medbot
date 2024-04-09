@@ -15,14 +15,21 @@ class SignInUser(BaseModel):
 
 
 class UserBase(BaseModel):
+    user_id:str
     email:str
     user_name:str
     user_level:UserLevel = UserLevel.user
 
-class RegisterUser(UserBase):
+class RegisterUser(BaseModel):
+    email:str
+    user_name:str
+    user_level:UserLevel = UserLevel.user
     password:str
 
-class UserInDB(UserBase):
+class UserInDB(BaseModel):
+    email:str
+    user_name:str
+    user_level:UserLevel = UserLevel.user
     hashed_password:str
 
 class TokenData(BaseModel):

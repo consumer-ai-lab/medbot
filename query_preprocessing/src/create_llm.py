@@ -37,3 +37,6 @@ class CreateLLM:
                 )
             case _:
                 raise RuntimeError(message="Wrong llm name")
+            
+    def getModel(self):
+        return self.llm
