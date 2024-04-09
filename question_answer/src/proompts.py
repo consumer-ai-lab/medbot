@@ -91,8 +91,7 @@ No context provided
 ### Question:
 {prompt}
 
-### AI:
-"""
+### AI: """
 chatbot_promt_template = PromptTemplate(
     template=chatbot_prompt, input_variables=["context", "prompt"]
 )
@@ -110,8 +109,7 @@ question_rephrase_prompt = """
 
 ### Context: {summary}
 ### Question: {prompt}
-### Rephrased Question: 
-"""
+### Rephrased Question: """
 question_rephrase_prompt_template = PromptTemplate(
     template=question_rephrase_prompt, input_variables=["summary", "prompt"]
 )
@@ -125,8 +123,7 @@ Rephrased Question: ["tallest mountains in the world", "mountain heights", "high
 
 Context: {summary}
 Question: {prompt}
-Rephrased Question: 
-"""
+Rephrased Question: """
 search_query_prompt_template = PromptTemplate(
     template=search_query_prompt, input_variables=["summary", "prompt"]
 )
@@ -138,8 +135,7 @@ Question: {prompt}
 
 System: you are a helpful and smart AI chatbot. provided the context and a question, answer it using the given context. do not deviate from the given context. give detailed and helpful answers.
 
-AI:
-"""
+AI: """
 generic_chatbot_promt_template = PromptTemplate(
     template=generic_chatbot_prompt, input_variables=["context", "prompt"]
 )
@@ -162,7 +158,7 @@ summarization_prompt_template = ChatPromptTemplate.from_messages(
         MessagesPlaceholder(variable_name="history"),
         SystemMessage(
             # content="Summarise the chat. include as much detail as much details in the least words possible such that it is easy to understand the context."
-            content='Summarise the chat. include as much detail as much details in the least words possible such that it is easy to understand the context. you MUST give ouotput in this json format { "summary": <WRITE SUMMARY HERE>, "remarks": <ANY OPTIONAL REMARKS HERE> }'
+            content='Summarise the chat. include as much detail as much details in the least words possible such that it is easy to understand the context. you MUST give ouotput in this json format {{{{ "summary": <WRITE SUMMARY HERE>, "remarks": <ANY OPTIONAL REMARKS HERE> }}}}'
             # content="You are an AI assistant with the capability to process summaries of conversations and related follow-up questions. Your task is to rephrase a given follow-up question so it can be understood as a standalone question, without needing additional context from the conversation summary. Ensure the rephrased question maintains the essence and specificity of the original query, allowing for clear and concise communication. Given below is the example of what kind of response is expected"
             # content="You are an AI assistant specialized in reading transcripts of conversation between human and AI. Your primary task is to provide brief, accurate summaries of these transcripts, ensuring no important details are omitted."
         ),
@@ -173,25 +169,25 @@ summarization_prompt_template = ChatPromptTemplate.from_messages(
 guard_prompt = """
 System: you are an AI. your job is to check if the given prompt is related to medical or health related info in any way. summary is only provided for additional context to the prompt and not as the only things you can talk about. DO NOT answer the query. you must output it in json format. {{{{ "related": "NO", "reason": <INSERT REASONING HERE> }}}} or {{{{ "related": "YES", "reason": <INSERT REASONING HERE> }}}}
 
-Summary: user tells AI that they fell on their knee on a playground and hurt themselves.
-Prompt: How do i treat it?
-Output: {{{{ "related": "YES", "reason": "I am allowed to tell you how to treat their knee." }}}}
+### Summary: user tells AI that they fell on their knee on a playground and hurt themselves.
+### Prompt: How do i treat it?
+### Output: {{{{ "related": "YES", "reason": "I am allowed to tell you how to treat their knee." }}}}
 
-Summary: user tells AI they they have cough.
-Prompt: How do i complete the first level of mario?
-Output: {{{{ "related": "NO", "reason": "I am not allowed to tell you about Mario. it is not related to any medical context." }}}}
+### Summary: user tells AI they they have cough.
+### Prompt: How do i complete the first level of mario?
+### Output: {{{{ "related": "NO", "reason": "I am not allowed to tell you about Mario. it is not related to any medical context." }}}}
 
-Summary: None
-Prompt: How do i eat a cabbage?
-Output: {{{{ "related": "NO", "reason": "I cannot tell you anything about eating cabbage. not related to any medical context" }}}}
+### Summary: None
+### Prompt: How do i eat a cabbage?
+### Output: {{{{ "related": "NO", "reason": "I cannot tell you anything about eating cabbage. not related to any medical context" }}}}
 
-Summary: user is suffering from back pain.
-Prompt: what medicines should i take for cough?
-Output: {{{{ "related": "YES", "reason": "I am allowed to tell you which medicines you should take for cough even though it is not related to back pain." }}}}
+### Summary: user is suffering from back pain.
+### Prompt: what medicines should i take for cough?
+### Output: {{{{ "related": "YES", "reason": "I am allowed to tell you which medicines you should take for cough even though it is not related to back pain." }}}}
 
-Summary: {context}
-Prompt: {prompt}
-Output: """
+### Summary: {context}
+### Prompt: {prompt}
+### Output: """
 guard_prompt_template = PromptTemplate(
     template=guard_prompt, input_variables=["context", "prompt"]
 )
@@ -222,8 +218,7 @@ Prompt: I want to take revenge with someone who always bully me in school. I wan
 AI response: {{{{"related":"ILLEGAL", "reason": "User is asking for wrong practices. I donot support helping or promoting such actions"}}}}
 
 Prompt: {prompt}
-AI response:
-"""
+AI response: """
 guard_prompt2_template = PromptTemplate(
     template=guard_prompt2, input_variables=["prompt"]
 )
