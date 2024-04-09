@@ -223,6 +223,22 @@ def printer_print(x):
 printer = RunnableLambda(printer_print)
 
 
+def hacky_extract_json_dict(x):
+    if "{" not in x:
+        raise RuntimeError(f"string does not contain a json object: {x}")
+
+    inside = x.split("{")[1]
+    inside = inside.split("}")[0]
+    return "{" + inside + "}"
+
+def hacky_extract_json_list(x):
+    if "[" not in x:
+        raise RuntimeError(f"string does not contain a json object: {x}")
+
+    inside = x.split("[")[1]
+    inside = inside.split("]")[0]
+    return "[" + inside + "]"
+
 class QaService:
 
     """ question summary """
@@ -233,6 +249,8 @@ class QaService:
             | llm
             | printer
             | StrOutputParser()
+            | RunnableLambda(hacky_extract_json_dict)
+            | printer
             | RunnableLambda(lambda x: json.loads(x))
             | RunnableLambda(lambda x: x["question"])
         )
@@ -265,6 +283,17 @@ class QaService:
             | llm
             | printer
             | StrOutputParser()
+        )
+
+    """ prompt summary """
+    def generate_search_queries_chain(self, llm):
+        return (
+            search_query_prompt_template
+            | llm
+            | StrOutputParser()
+            | printer
+            | RunnableLambda(hacky_extract_json_list)
+            | RunnableLambda(lambda x: json.loads(x))
         )
 
 class VectorDbQaService(QaService):
@@ -420,13 +449,7 @@ class InternetQaService(QaService):
     def generate_questions_chain(self, llm):
         return (
             RunnableParallel(
-                questions=(
-                    search_query_prompt_template
-                    | llm
-                    | StrOutputParser()
-                    | printer
-                    | RunnableLambda(lambda x: json.loads(x))
-                ),
+                questions=self.generate_search_queries_chain(llm),
                 prompt=lambda x: x["prompt"],
             )
             | printer
