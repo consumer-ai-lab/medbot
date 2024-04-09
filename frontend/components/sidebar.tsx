@@ -28,7 +28,6 @@ import buildAxiosClient from '@/api/build-axios-client'
 
 interface SidebarProps {
   isCollapsed: boolean
-  messages: Message[]
   onClick?: () => void
   isMobile: boolean
   user: UserType
