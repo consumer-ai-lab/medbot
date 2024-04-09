@@ -11,7 +11,7 @@ from langchain_core.output_parsers import StrOutputParser
 from dotenv import find_dotenv, load_dotenv
 from typing import List
 
-from .gaurdrails import is_relevent
+from .gaurdrails import relevance_chain
 from .types import (
     ApiQuery,
     QaQuery,
@@ -43,10 +43,14 @@ app.add_middleware(
 def root():
     return {"message": "hello from query_preprocessing_service"}
 
+async def generator(resp):
+    for chunk in resp.response.split():
+        yield f"{chunk} " 
+        await asyncio.sleep(0.1)
 
 @app.post("/generate")
 async def get_ai_message(query: ApiQuery,current_user: UserBase=Depends(get_current_user)):
-    # llm = CreateLLM(query.model).getModel()
+    llm = CreateLLM(query.model).getModel()
 
     chat_manager = get_redis_manager(current_user.user_id)
     if not chat_manager.has_thread(query.thread_id):
@@ -59,35 +63,26 @@ async def get_ai_message(query: ApiQuery,current_user: UserBase=Depends(get_curr
         query.thread_id, Message(role=MessageRole.user, content=query.prompt)
     )
 
-    # TODO
-    # summary_manager = get_chat_summary_manager(llm)
-    # summary = summary_manager.summarize_chats(history=chat_history)
+    summary_manager = get_chat_summary_manager(llm)
+    summary = summary_manager.summarize_chats(history=chat_history)
 
-    qa_query = QaQuery(**(query.dict() | {"summary": "no previous chat history"}))
-    # qa_query = QaQuery(**(query.dict()))
-    # if not is_relevent(llm, qa_query):
-    if True:
+    qa_query = QaQuery(**(query.dict() | {"summary": summary}))
+    guard_chain = relevance_chain(llm)
+    resp = guard_chain.invoke(qa_query.dict())
+    if not resp.is_related():
         resp = QaResponse(
             **{
                 "type": QaResponse.Type.REJECTED,
-                "response": "I am sorry, I am not able to answer this question. Please ask something else related to medicine.",
+                "response": resp.reason,
             }
         )
 
-        # TODO: add the message to the chat history
         chat_manager.add_message(
             query.thread_id,
             Message(role=MessageRole.assistant, content=resp.response),
         )
 
-        async def generator():
-            for chunk in resp.response.split():
-                yield f"{chunk} " 
-                await asyncio.sleep(0.1)
-
-        response_messages=generator()
-
-        return StreamingResponse(response_messages, media_type="text/event-stream")
+        return StreamingResponse(generator(resp), media_type="text/event-stream")
 
     
 
@@ -105,12 +100,13 @@ async def get_ai_message(query: ApiQuery,current_user: UserBase=Depends(get_curr
             query.thread_id,
             Message(role=MessageRole.assistant, content=ai_response.get("ai_response")),
         )
-        return QaResponse(
+        resp = QaResponse(
             **{
                 "type": QaResponse.Type.OK,
                 "response": ai_response.get("ai_response"),
             }
         )
+        return StreamingResponse(generator(resp), media_type="text/event-stream")
 
 
 @app.post("/get-threads")
