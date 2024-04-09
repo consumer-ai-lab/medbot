@@ -161,7 +161,8 @@ summarization_prompt_template = ChatPromptTemplate.from_messages(
     [
         MessagesPlaceholder(variable_name="history"),
         SystemMessage(
-            content="Summarise the chat. include as much detail as much details in the least words possible such that it is easy to understand the context."
+            # content="Summarise the chat. include as much detail as much details in the least words possible such that it is easy to understand the context."
+            content='Summarise the chat. include as much detail as much details in the least words possible such that it is easy to understand the context. you MUST give ouotput in this json format { "summary": <WRITE SUMMARY HERE>, "remarks": <ANY OPTIONAL REMARKS HERE> }'
             # content="You are an AI assistant with the capability to process summaries of conversations and related follow-up questions. Your task is to rephrase a given follow-up question so it can be understood as a standalone question, without needing additional context from the conversation summary. Ensure the rephrased question maintains the essence and specificity of the original query, allowing for clear and concise communication. Given below is the example of what kind of response is expected"
             # content="You are an AI assistant specialized in reading transcripts of conversation between human and AI. Your primary task is to provide brief, accurate summaries of these transcripts, ensuring no important details are omitted."
         ),

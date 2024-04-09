@@ -22,7 +22,7 @@ from .types import (
     ApiThreadQuery,
 )
 from .redis_manager import get_redis_manager
-from .chat_summary_manager import get_chat_summary_manager
+from .chat_summary_manager import SummaryProompter
 from .create_llm import CreateLLM
 import asyncio
 
@@ -65,8 +65,8 @@ async def get_ai_message(
         query.thread_id, Message(role=MessageRole.user, content=query.prompt)
     )
 
-    summary_manager = get_chat_summary_manager(llm)
-    summary = summary_manager.summarize_chats(history=chat_history)
+    summarizer = SummaryProompter()
+    summary = summarizer.get_summary(llm, chat_history)
 
     qa_query = QaQuery(**(query.dict() | {"summary": summary}))
     relevance = RelevenceProompter()
