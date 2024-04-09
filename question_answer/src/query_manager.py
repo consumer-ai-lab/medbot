@@ -31,6 +31,7 @@ from langchain_community.tools.pubmed.tool import PubmedQueryRun
 
 # from langchain_community.document_loaders import AsyncChromiumLoader
 from langchain_community.document_transformers import BeautifulSoupTransformer
+from langchain.retrievers.tavily_search_api import TavilySearchAPIRetriever, SearchDepth
 from bs4 import BeautifulSoup
 
 from langchain.globals import set_debug
@@ -223,32 +224,45 @@ def printer_print(x):
 printer = RunnableLambda(printer_print)
 
 
-class QaService:
+def hacky_extract_json_dict(x):
+    if "{" not in x:
+        raise RuntimeError(f"string does not contain a json object: {x}")
 
-    """ question summary """
-    def question_rephrase_chain(llm):
+    inside = x.split("{")[1]
+    inside = inside.split("}")[0]
+    return "{" + inside + "}"
+
+
+def hacky_extract_json_list(x):
+    if "[" not in x:
+        raise RuntimeError(f"string does not contain a json object: {x}")
+
+    inside = x.split("[")[1]
+    inside = inside.split("]")[0]
+    return "[" + inside + "]"
+
+
+class QaService:
+    def question_rephrase_chain(self, llm):
+        """prompt summary"""
         return (
             question_rephrase_prompt_template
             | printer
             | llm
             | printer
             | StrOutputParser()
+            | RunnableLambda(hacky_extract_json_dict)
+            | printer
             | RunnableLambda(lambda x: json.loads(x))
             | RunnableLambda(lambda x: x["question"])
         )
 
-    """ context question """
-    def medical_chatbot_prompt_chain(llm):
-        return (
-            chatbot_promt_template
-            | printer
-            | llm
-            | printer
-            | StrOutputParser()
-        )
+    def medical_chatbot_prompt_chain(self, llm):
+        """context prompt"""
+        return chatbot_promt_template | printer | llm | printer | StrOutputParser()
 
-    """ context question summary """
-    def medical_chatbot_with_history_prompt_chain(llm):
+    def medical_chatbot_with_history_prompt_chain(self, llm):
+        """context prompt summary"""
         return (
             chatbot_with_history_promt_template
             | printer
@@ -257,15 +271,23 @@ class QaService:
             | StrOutputParser()
         )
 
-    """ question summary """
-    def generic_chatbot_prompt_chain(llm):
+    def generic_chatbot_prompt_chain(self, llm):
+        """prompt summary"""
         return (
-            generic_chatbot_promt_template
-            | printer
-            | llm
-            | printer
-            | StrOutputParser()
+            generic_chatbot_promt_template | printer | llm | printer | StrOutputParser()
         )
+
+    def generate_search_queries_chain(self, llm):
+        """prompt summary"""
+        return (
+            search_query_prompt_template
+            | llm
+            | StrOutputParser()
+            | printer
+            | RunnableLambda(hacky_extract_json_list)
+            | RunnableLambda(lambda x: json.loads(x))
+        )
+
 
 class VectorDbQaService(QaService):
     def qa_chain(self, llm, embeddings):
@@ -317,14 +339,11 @@ class PubmedQaService(QaService):
         )
 
     def pubmed_context_chain(self, llm):
-        return (
-            self.genrate_search_queries_chain(llm)
-            | RunnableEach(
-                bound=(
-                    RunnableParallel(
-                        prompt=lambda x: x,
-                        context=lambda x: Document(page_content=PubmedQueryRun().invoke(x)),
-                    )
+        return self.genrate_search_queries_chain(llm) | RunnableEach(
+            bound=(
+                RunnableParallel(
+                    prompt=lambda x: x,
+                    context=lambda x: Document(page_content=PubmedQueryRun().invoke(x)),
                 )
             )
         )
@@ -349,6 +368,52 @@ class PubmedQaService(QaService):
             )
             | printer
         )
+
+
+class TavilyQaService(QaService):
+    def tavily_chain(self):
+        return TavilySearchAPIRetriever(
+            k=1,
+            api_key=os.getenv("TAVILY_AI_API_KEY"),
+            search_depth=SearchDepth.ADVANCED,
+            include_generated_answer=True,
+        )
+
+    def web_context_chain(self, llm, embeddings):
+        return (
+            self.generate_search_queries_chain(llm)
+            | RunnableEach(
+                bound=(
+                    RunnableParallel(
+                        prompt=lambda x: x,
+                        urls=self.tavily_chain(),
+                    )
+                )
+            )
+            | printer
+            | RunnableLambda(lambda x: [d for d in x])
+            | printer
+        )
+
+    def qa_chain(self, llm, embeddings):
+        return (
+            RunnableParallel(
+                prompt=self.question_rephrase_chain(llm),
+                summary=lambda x: x["summary"],
+            )
+            | printer
+            | RunnableParallel(
+                prompt=lambda x: x["prompt"],
+                summary=lambda x: x["summary"],
+                context=self.web_context_chain(llm, embeddings),
+            )
+            | printer
+            | RunnableParallel(
+                context=lambda x: x["context"],
+                response=self.generic_chatbot_prompt_chain(llm),
+            )
+        )
+
 
 class InternetQaService(QaService):
     def __init__(self):
@@ -393,18 +458,22 @@ class InternetQaService(QaService):
 
             docs = []
             for url in urls:
-                response = self.session.get(url, timeout=4)
-                soup = BeautifulSoup(
-                    response.content, "lxml", from_encoding=response.encoding
-                )
-                text = ""
-                for element in soup.find_all(tags):
-                    text += element.text + "\n"
-                doc = {
-                    "page_content": text,
-                    "source": url,
-                }
-                docs.append(doc)
+                try:
+                    response = self.session.get(url, timeout=6)
+                    soup = BeautifulSoup(
+                        response.content, "lxml", from_encoding=response.encoding
+                    )
+                    text = ""
+                    for element in soup.find_all(tags):
+                        text += element.text + "\n"
+                    doc = {
+                        "page_content": text,
+                        "source": url,
+                    }
+                    docs.append(doc)
+                except Exception as e:
+                    print(f"ERROR while searching url {url}: ", e)
+                    continue
             return docs
             pass
 
@@ -420,13 +489,7 @@ class InternetQaService(QaService):
     def generate_questions_chain(self, llm):
         return (
             RunnableParallel(
-                questions=(
-                    search_query_prompt_template
-                    | llm
-                    | StrOutputParser()
-                    | printer
-                    | RunnableLambda(lambda x: json.loads(x))
-                ),
+                questions=self.generate_search_queries_chain(llm),
                 prompt=lambda x: x["prompt"],
             )
             | printer
@@ -540,9 +603,26 @@ def get_response(query: QaQuery) -> str:
             strategy = VectorDbQaService()
         case Strategy.pubmed_search:
             strategy = PubmedQaService()
+        case Strategy.web_search_api:
+            strategy = TavilyQaService()
         case _:
             raise RuntimeError("unimplemented strategy")
 
     chain = strategy.qa_chain(llm, embeddings)
     res = chain.invoke(query.dict())
     return res
+
+
+if __name__ == "__main__":
+    query = QaQuery(
+        **{
+            "model": Model.groq_mistral_8x7b,
+            "embeddings_model": EmbeddingsModel.gemini_pro,
+            "strategy": Strategy.web_search_api,
+            "prompt": "what medicines do i take for headache?",
+            "summary": "None",
+        }
+    )
+
+    resp = get_response(query)
+    print(resp)
