@@ -47,14 +47,14 @@ export function ChatClient({
 	defaultCollapsed = false,
 	navCollapsedSize = 10,
 	user
-	// messages,  TODO: Fetch messages
 }: ChatClientProps) {
 	const {toast}=useToast();
 	const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed)
 	const [isMobile, setIsMobile] = useState(false);
 	const [loadingSubmit, setLoadingSubmit] = React.useState(false)
 	const [messages, setMessages] = useState<Message[]>(messagesStub);
-
+	const [chatId,setChatId]=useState<string>('')
+;
 	const {
 		input,
 		setInput,
