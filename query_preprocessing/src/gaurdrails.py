@@ -23,24 +23,27 @@ printer = RunnableLambda(printer_print)
 
 # TODO: maybe fuse both these prompt
 guard_prompt = """
-System: you are an AI. your job is to check if the given prompt is related to medical or health related info in any way. DO NOT answer the query. you must output it in json format. {{{{ "related": "NO", "reason": <INSERT REASONING HERE> }}}} or {{{{ "related": "YES", "reason": <INSERT REASONING HERE> }}}}
+System: you are an AI. your job is to check if the given prompt is related to medical or health related info in any way. summary is only provided for additional context to the prompt and not as the only things you can talk about. DO NOT answer the query. you must output it in json format. {{{{ "related": "NO", "reason": <INSERT REASONING HERE> }}}} or {{{{ "related": "YES", "reason": <INSERT REASONING HERE> }}}}
 
-Context: user tells AI that they fell on their knee on a playground and hurt themselves.
+Summary: user tells AI that they fell on their knee on a playground and hurt themselves.
 Prompt: How do i treat it?
 Output: {{{{ "related": "YES", "reason": "I am allowed to tell you how to treat their knee." }}}}
 
-Context: user tells AI they they have cough.
+Summary: user tells AI they they have cough.
 Prompt: How do i complete the first level of mario?
 Output: {{{{ "related": "NO", "reason": "I am not allowed to tell you about Mario. it is not related to any medical context." }}}}
 
-Context: None
+Summary: None
 Prompt: How do i eat a cabbage?
 Output: {{{{ "related": "NO", "reason": "I cannot tell you anything about eating cabbage. not related to any medical context" }}}}
 
-Context: {context}
+Summary: user is suffering from back pain.
+Prompt: what medicines should i take for cough?
+Output: {{{{ "related": "YES", "reason": "I am allowed to tell you which medicines you should take for cough even though it is not related to back pain." }}}}
+
+Summary: {context}
 Prompt: {prompt}
-Output: 
-"""
+Output: """
 guard_prompt_template = PromptTemplate(
     template=guard_prompt, input_variables=["context", "prompt"]
 )
