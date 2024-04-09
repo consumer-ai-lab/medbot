@@ -7,6 +7,7 @@ import {
     Card,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -21,6 +22,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import Link from "next/link";
 
 
 const formSchema = z.object({
@@ -58,16 +60,16 @@ export default function LoginForm() {
                 description: "Successfully signed in!"
             })
             router.push('/chat');
-            router.refresh(); 
-        } catch (error) {  
-            console.log('[LOGIN_FORM]: ',error);
+            router.refresh();
+        } catch (error) {
+            console.log('[LOGIN_FORM]: ', error);
             // @ts-ignore
-            if(error.response.status===401){
+            if (error.response.status === 401) {
                 toast({
                     variant: "destructive",
                     description: "Invalid Credentials"
                 })
-            }else{
+            } else {
                 toast({
                     variant: "destructive",
                     description: "Something went wrong, please try again later."
@@ -134,6 +136,21 @@ export default function LoginForm() {
                     </form>
                 </Form>
             </CardContent>
+            <CardFooter className="flex flex-col">
+                <CardDescription>
+                    Don't have an account?
+                </CardDescription>
+                <Button
+                    variant={"link"}
+                    className="font-normal w-full"
+                    size={"sm"}
+                    asChild
+                >
+                    <Link href="/auth/sign-up">
+                        Sign Up
+                    </Link>
+                </Button>
+            </CardFooter>
         </Card>
     )
 }

@@ -7,6 +7,7 @@ import {
     Card,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -23,6 +24,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import Link from "next/link";
 
 
 const formSchema = z.object({
@@ -155,6 +157,21 @@ export default function RegisterForm() {
                     </form>
                 </Form>
             </CardContent>
+            <CardFooter className="flex flex-col">
+                <CardDescription>
+                    Already have an account?
+                </CardDescription>
+                <Button
+                    variant={"link"}
+                    className="font-normal w-full"
+                    size={"sm"}
+                    asChild
+                >
+                    <Link href="/auth/sign-in">
+                        Sign In
+                    </Link>
+                </Button>
+            </CardFooter>
         </Card>
     )
 }
