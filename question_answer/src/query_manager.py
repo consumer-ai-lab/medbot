@@ -204,6 +204,7 @@ generic_chatbot_promt_template = PromptTemplate(
     template=generic_chatbot_prompt, input_variables=["context", "prompt"]
 )
 
+
 def printer_print(x):
     print()
     pprint.pprint(x)
@@ -253,7 +254,7 @@ class VectorDbQaService(QaService):
             # | printer
             RunnableParallel(
                 prompt=lambda x: x["prompt"],
-                summary=lambda x: x['summary'],
+                summary=lambda x: x["summary"],
                 context=lambda x: [
                     # Document(page_content=PubmedQueryRun().invoke(x["prompt"]))
                 ]
@@ -262,7 +263,12 @@ class VectorDbQaService(QaService):
             | printer
             | RunnableParallel(
                 # response=(chatbot_promt_template | printer | llm | StrOutputParser()),
-                response=(chatbot_with_history_promt_template | printer | llm | StrOutputParser()),
+                response=(
+                    chatbot_with_history_promt_template
+                    | printer
+                    | llm
+                    | StrOutputParser()
+                ),
                 context=lambda x: x["context"],
             )
             | printer

@@ -120,21 +120,3 @@ def relevance_chain(llm):
         | RunnableLambda(lambda x: json.loads(x))
         | RunnableLambda(lambda x: RelevanceResponse(**x))
     )
-
-
-def is_relevant(llm, query: QaQuery):
-    chain = relevance_chain(llm)
-
-    resp = chain.invoke(query.dict())
-
-    try:
-        resp = json.loads(resp)
-        match resp["related"]:
-            case "YES" | "MAYBE":
-                return True
-            case "NO" | "ILLEGAL":
-                return False
-            case _:
-                return True
-    except Exception:
-        return True

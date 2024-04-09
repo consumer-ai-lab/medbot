@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException,Depends
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from .security import get_current_user,UserBase
+from .security import get_current_user, UserBase
 import requests
 import google.generativeai as genai
 from langchain.prompts import PromptTemplate
@@ -43,20 +43,22 @@ app.add_middleware(
 def root():
     return {"message": "hello from query_preprocessing_service"}
 
+
 async def generator(resp):
     for chunk in resp.response.split():
-        yield f"{chunk} " 
+        yield f"{chunk} "
         await asyncio.sleep(0.1)
 
+
 @app.post("/generate")
-async def get_ai_message(query: ApiQuery,current_user: UserBase=Depends(get_current_user)):
+async def get_ai_message(
+    query: ApiQuery, current_user: UserBase = Depends(get_current_user)
+):
     llm = CreateLLM(query.model).getModel()
 
     chat_manager = get_redis_manager(current_user.user_id)
     if not chat_manager.has_thread(query.thread_id):
-        chat_manager.add_thread(
-            ChatThread(id=query.thread_id, title=query.prompt)
-        )
+        chat_manager.add_thread(ChatThread(id=query.thread_id, title=query.prompt))
     chat_history = chat_manager.get_chat(query.thread_id)
 
     chat_manager.add_message(
@@ -84,8 +86,6 @@ async def get_ai_message(query: ApiQuery,current_user: UserBase=Depends(get_curr
 
         return StreamingResponse(generator(resp), media_type="text/event-stream")
 
-    
-
     try:
         response = requests.post(
             "http://qa-service:8000/get-ai-response", json=qa_query.dict()
@@ -110,15 +110,16 @@ async def get_ai_message(query: ApiQuery,current_user: UserBase=Depends(get_curr
 
 
 @app.post("/get-threads")
-def threads(current_user: UserBase=Depends(get_current_user)) :
+def threads(current_user: UserBase = Depends(get_current_user)):
     chat_manager = get_redis_manager(current_user.user_id)
     threads = chat_manager.get_threads()
     return threads
 
 
-
 @app.post("/thread")
-def thread(query: ApiThreadQuery,current_user: UserBase=Depends(get_current_user)) -> List[Message]:
+def thread(
+    query: ApiThreadQuery, current_user: UserBase = Depends(get_current_user)
+) -> List[Message]:
     chat_manager = get_redis_manager(current_user.user_id)
     chat_history = chat_manager.get_chat(query.thread_id)
     return chat_history
