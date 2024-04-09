@@ -53,6 +53,7 @@ def relevance_chain(llm):
     # chain = guard_chain2(llm)
     return (
         chain
+        | RunnableLambda(hacky_extract_json_dict)
         | RunnableLambda(lambda x: json.loads(x))
         | RunnableLambda(lambda x: RelevanceResponse(**x))
     )
