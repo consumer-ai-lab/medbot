@@ -35,9 +35,6 @@ interface SidebarProps {
   setThreadId: (threadId: string) => void;
 }
 
-
-const selectedThreadStub='chat1'
-
 type ThreadType={
   title:string;
   id:string;
@@ -56,7 +53,6 @@ export function Sidebar({
 
   useEffect(() => {
     axios.get('/api/chat/get-threads',{withCredentials:true}).then((resp:any)=>{
-      console.log(resp.data);
       if(resp.data && resp.data.length>0){
         setAllThreads(resp.data.reverse());
       }
@@ -68,8 +64,7 @@ export function Sidebar({
 
   // TODO: Delete handler
   const handleDeleteChat = (chatId: string) => {
-    // localStorage.removeItem(chatId)
-    // setLocalChats(await getLocalstorageChats())
+
   }
 
   return (

@@ -57,7 +57,7 @@ export default function LoginForm() {
                 title: "Welcome",
                 description: "Successfully signed in!"
             })
-            router.push('/');
+            router.push('/chat');
             router.refresh(); 
         } catch (error) {  
             console.log('[LOGIN_FORM]: ',error);

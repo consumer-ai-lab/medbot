@@ -60,7 +60,7 @@ export default function RegisterForm() {
                 title: "Welcome",
                 description: "Successfully signed up!"
             })
-            router.push('/');
+            router.push('/chat');
             router.refresh();
         } catch (error) {
             console.log('[REGISTER_FORM]: ',error);
