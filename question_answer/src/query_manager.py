@@ -290,6 +290,7 @@ class InternetQaService(QaService):
     def url_content_extraction_chain(self, method: UrlExtractionMethod):
         tags = ["p", "h1", "h2", "h3", "h4", "h5", "span"]
 
+        # TODO: make it work in docker
         def chrome_loader(urls):
             # loader = AsyncChromiumLoader(urls)
             # html = loader.load()
