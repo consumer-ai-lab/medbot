@@ -14,6 +14,7 @@ class ChatThread(pydantic.BaseModel):
     title: str
     id: str
 
+
 # :skull https://stackoverflow.com/questions/77550506/what-is-the-right-way-to-do-system-prompting-with-ollama-in-langchain-using-pyth
 class Model(str, enum.Enum):
     gemini_pro = "gemini-pro"
@@ -48,19 +49,17 @@ class Query(pydantic.BaseModel):
     model: Model
 
 class ApiThreadQuery(pydantic.BaseModel):
-    user_id: str
     thread_id: str
 
 class ApiQuery(pydantic.BaseModel):
-    user_id: str
     thread_id: str
     model: Model
     prompt: str
 
 class QaQuery(pydantic.BaseModel):
     model: Model
-    question: str
     prompt: str
+    summary: str
 
 
 class QaResponse(pydantic.BaseModel):
@@ -71,5 +70,4 @@ class QaResponse(pydantic.BaseModel):
 
     type: Type
     response: str
-
 
