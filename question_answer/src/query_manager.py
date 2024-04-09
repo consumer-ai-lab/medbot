@@ -82,13 +82,23 @@ chatbot_long_prompt_template = PromptTemplate(
 
 
 chatbot_with_history_prompt = """
-Summary: {summary}
+### System: provided the summary, context and a question, answer it using the given context without mentioning the existance of this context. you may offer medical advice. when context is not related to the question, just say that you don't know about it.
 
-Context: {context}
+### Symmary: []
 
-Question: {prompt}
+### Context: <CONTEXT ABOUT KNEE SPRAINS>
 
-System: provided the summary, context and a question, answer it using the given context. you may offer medical advice. do not deviate from the given context. when context is not related to the question, just say that the context does not have the answer to the question.
+### Question: how do i treat brain damage?
+
+### AI: I can't tell you about treating brain damage as i don't know about it.
+
+
+### Summary: {summary}
+
+### Context: {context}
+
+### Question: {prompt}
+
 """
 chatbot_with_history_promt_template = PromptTemplate(
     template=chatbot_with_history_prompt,
