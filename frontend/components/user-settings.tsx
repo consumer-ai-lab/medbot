@@ -75,10 +75,10 @@ export default function UserSettings(
               </div>
             </DropdownMenuItem>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent >
             <DialogHeader className="space-y-4">
               <DialogTitle>Settings</DialogTitle>
-              <SettingsModal />
+              <SettingsModal  />
             </DialogHeader>
           </DialogContent>
         </Dialog>

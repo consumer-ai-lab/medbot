@@ -2,9 +2,8 @@ import React from 'react'
 import ChatTopbar from './chat-topbar'
 import ChatList from './chat-list'
 import ChatBottombar from './chat-bottombar'
-import { Message, useChat } from 'ai/react';
+import { type Message } from 'ai/react';
 import { ChatRequestOptions } from 'ai';
-import { v4 as uuidv4 } from 'uuid';
 import { UserType } from '@/lib/user-type';
 
 export interface ChatProps {
@@ -26,21 +25,18 @@ export default function Chat ({ messages, input, handleInputChange, handleSubmit
 
   return (
     <div className="flex flex-col justify-between w-full h-full  ">
-      
         <ChatTopbar
           user={user}  
           isLoading={isLoading}
           chatId={chatId} 
           messages={messages} 
         />
-
         <ChatList  
           completion={completion}
           messages={messages}
           isLoading={isLoading}
           loadingSubmit={loadingSubmit}
         />
-
         <ChatBottombar 
           input={input}
           handleInputChange={handleInputChange}
@@ -48,7 +44,6 @@ export default function Chat ({ messages, input, handleInputChange, handleSubmit
           isLoading={isLoading}
           stop={stop}
         />
-
     </div>
   )
 }

@@ -1,5 +1,4 @@
 'use client'
-
 import { Model } from '@/Model'
 import { Form } from '@/components/ui/form'
 import {
@@ -10,11 +9,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { zodResolver } from '@hookform/resolvers/zod'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from './ui/button'
+import { useToast } from './ui/use-toast';
+import { getSelectedModel } from '@/lib/model-helper'
 
 const models = Object.values(Model)
 const formSchema = z.object({
@@ -25,6 +25,15 @@ const formSchema = z.object({
 
 
 export function SettingsModal() {
+  const [selectedModel,setSelectedModel]=useState<string>();
+
+  useEffect(()=>{
+    const model=getSelectedModel();
+    console.log(model);
+    setSelectedModel(model)
+  },[])
+
+  const {toast}=useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,9 +45,11 @@ export function SettingsModal() {
     console.log(values)
     localStorage.setItem('selectedModel', values.model)
     window.dispatchEvent(new Event('storage'))
-    toast.success('Updated successfully')
+    toast({
+      title: "Success",
+      description: "Model changed successfully, please close the modal now.",
+    })
   }
-
   const handleChange = (value: string) => {
     form.setValue('model', value)
   }
@@ -49,13 +60,15 @@ export function SettingsModal() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 pt-4"
       >
-        <Select onValueChange={handleChange}>
+        <Select onValueChange={handleChange} value={selectedModel}>
           <SelectTrigger>
-            <SelectValue placeholder="Select Model" />
+            <SelectValue
+              placeholder="Select Model" 
+            />
           </SelectTrigger>
           <SelectContent>
             {models.map((model) => {
-              return <SelectItem value={model}>{model}</SelectItem>
+              return <SelectItem key={model} value={model}>{model}</SelectItem>
             })}
           </SelectContent>
         </Select>
