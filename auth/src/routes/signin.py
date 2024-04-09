@@ -26,11 +26,15 @@ async def sign_in_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     
     # create jwt
-    encoded_jwt=create_access_token(data={"sub":db_user.user_name, "email": db_user.email, "user_level": db_user.user_level})
+    encoded_jwt=create_access_token(data={"sub":str(db_user.id),"user_name":db_user.user_name, "email": db_user.email, "user_level": db_user.user_level})
 
     # set cookie
-    user = UserBase(user_name=db_user.user_name,email=user.email,user_level=db_user.user_level)
-
+    user = UserBase(
+        user_id=str(db_user.id),
+        user_name=db_user.user_name,
+        email=db_user.email,
+        user_level=db_user.user_level
+    )
     response = JSONResponse(content=user.model_dump(),status_code=status.HTTP_200_OK)
     response.set_cookie(
         key="jwt",
