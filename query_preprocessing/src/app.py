@@ -54,7 +54,7 @@ async def generator(resp):
 async def get_ai_message(
     query: ApiQuery, current_user: UserBase = Depends(get_current_user)
 ):
-    llm = CreateLLM(query.model).getModel()
+    llm = CreateLLM(query.model, query.embeddings_model).getModel()
 
     chat_manager = get_redis_manager(current_user.user_id)
     if not chat_manager.has_thread(query.thread_id):

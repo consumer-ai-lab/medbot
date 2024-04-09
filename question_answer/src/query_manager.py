@@ -47,7 +47,7 @@ from dotenv import find_dotenv, load_dotenv
 
 from langchain.globals import set_debug
 
-from .types import Model, QaQuery
+from .types import Model, QaQuery, Strategy, EmbeddingsModel
 from .create_llm import CreateLLM
 
 # set_debug(True)
@@ -226,32 +226,16 @@ printer = RunnableLambda(printer_print)
 
 
 class QaService:
-    def get_model(self, model: Model, temperature=0.5):
-        return CreateLLM(model, temperature).llm
-
-    def get_embeddings(self, model: Model):
-        if model == Model.gemini_pro:
-            embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-        elif model == Model.ollama_llama2 or model == Model.ollama_llama2_uncensored:
-            embeddings = OllamaEmbeddings(model=model.value + ":vram-34")
-        else:
-            embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-            # raise RuntimeError("unknown embedding model")
-
-        return embeddings
+    pass
 
 
 class VectorDbQaService(QaService):
-    def __init__(self, collection_name, connection_string):
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-        self.db = PGVector(
-            collection_name=collection_name,
-            connection_string=connection_string,
+    def qa_chain(self, llm, embeddings):
+        db = PGVector(
+            collection_name=os.getenv("CONNECTION_NAME"),
+            connection_string=os.getenv("CONNECTION_STRING"),
             embedding_function=embeddings,
         )
-
-    def qa_chain(self, model: Model):
-        llm = self.get_model(model, 0)
 
         return (
             # RunnableParallel(
@@ -269,7 +253,7 @@ class VectorDbQaService(QaService):
                 context=lambda x: [
                     Document(page_content=PubmedQueryRun().invoke(x["prompt"]))
                 ]
-                + self.db.as_retriever().invoke(x["prompt"]),
+                + db.as_retriever().invoke(x["prompt"]),
             )
             | printer
             | RunnableParallel(
@@ -285,11 +269,6 @@ class VectorDbQaService(QaService):
             )
             | printer
         )
-
-    def get_response(self, prompt: str, model: Model, summary: str):
-        bot = self.qa_chain(model)
-        resp = bot.invoke({"prompt": prompt, "summary": summary})
-        return resp
 
 
 class InternetQaService(QaService):
@@ -448,10 +427,7 @@ class InternetQaService(QaService):
             | printer
         )
 
-    def qa_chain(self, model: Model):
-        llm = self.get_model(model)
-        embeddings = self.get_embeddings(model)
-
+    def qa_chain(self, llm, embeddings):
         return (
             RunnableParallel(
                 prompt=(
@@ -477,27 +453,25 @@ class InternetQaService(QaService):
                     | llm
                     | printer
                     | StrOutputParser()
-                )
+                ),
             )
         )
 
-    def get_response(self, prompt: str, model: Model, summary: str):
-        bot = self.qa_chain(model)
-        resp = bot.invoke({"prompt": prompt, "summary": summary})
-        return resp
 
+def get_response(query: QaQuery) -> str:
+    create_llm = CreateLLM(query.model, query.embeddings_model)
+    llm = create_llm.getModel()
+    embeddings = create_llm.get_embeddings()
 
-class QueryManager:
-    def __init__(self):
-        self.connection_string = os.getenv("CONNECTION_STRING")
-        self.collection_name = os.getenv("CONNECTION_NAME")
+    match query.strategy:
+        case Strategy.web_search:
+            strategy = InternetQaService()
+        # TODO: separate these
+        case Strategy.medical_database | Strategy.pubmed_search:
+            strategy = VectorDbQaService()
+        case _:
+            raise RuntimeError("unimplemented strategy")
 
-    def get_response(self, query: QaQuery) -> str:
-        chain = VectorDbQaService(self.collection_name, self.connection_string)
-        # chain = InternetQaService()
-        res = chain.get_response(**query.dict())
-        return res
-
-
-def get_query_manager() -> QueryManager:
-    return QueryManager()
+    chain = strategy.qa_chain(llm, embeddings)
+    res = chain.invoke(query.dict())
+    return res
