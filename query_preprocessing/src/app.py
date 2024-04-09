@@ -109,7 +109,7 @@ async def get_ai_message(
         return StreamingResponse(generator(resp), media_type="text/event-stream")
 
 
-@app.post("/get-threads")
+@app.get("/get-threads")
 def threads(current_user: UserBase = Depends(get_current_user)):
     chat_manager = get_redis_manager(current_user.user_id)
     threads = chat_manager.get_threads()

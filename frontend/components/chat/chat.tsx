@@ -7,7 +7,6 @@ import { ChatRequestOptions } from 'ai';
 import { UserType } from '@/lib/user-type';
 
 export interface ChatProps {
-  chatId?: string,
   setSelectedModel?: React.Dispatch<React.SetStateAction<string>>;
   messages: Message[];
   input: string;
@@ -18,17 +17,20 @@ export interface ChatProps {
   error?: undefined | Error;
   completion:string;
   stop: () => void;
+  threadId?: string;
+  setThreadId: (threadId: string) => void;
   user:UserType
   }
 
-export default function Chat ({ messages, input, handleInputChange, handleSubmit, isLoading, error, stop, setSelectedModel, chatId, loadingSubmit,completion,user }: ChatProps) {
+export default function Chat ({ messages, input, handleInputChange, handleSubmit, isLoading, error, stop, setSelectedModel, threadId,setThreadId, loadingSubmit,completion,user }: ChatProps) {
 
   return (
     <div className="flex flex-col justify-between w-full h-full  ">
         <ChatTopbar
           user={user}  
           isLoading={isLoading}
-          chatId={chatId} 
+          threadId={threadId}
+          setThreadId={setThreadId}
           messages={messages} 
         />
         <ChatList  

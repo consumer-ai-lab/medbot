@@ -67,7 +67,6 @@ export default function ChatList({
     >
       <div className="w-full flex flex-col overflow-x-hidden overflow-y-hidden min-h-full justify-end">
         {messages.map((message, index) => {
-          console.log(message.content);
           return (
             <motion.div
               key={index}
