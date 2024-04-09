@@ -27,11 +27,11 @@ from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 from langchain.vectorstores.pgvector import PGVector
 
-# from langchain_community.tools.pubmed.tool import PubmedQueryRun
+from langchain_community.tools.pubmed.tool import PubmedQueryRun
 
 # from langchain_community.document_loaders import AsyncChromiumLoader
-# from langchain_community.document_transformers import BeautifulSoupTransformer
-# from bs4 import BeautifulSoup
+from langchain_community.document_transformers import BeautifulSoupTransformer
+from bs4 import BeautifulSoup
 
 from langchain.globals import set_debug
 
@@ -261,12 +261,12 @@ class VectorDbQaService(QaService):
             #         | StrOutputParser()
             #     ),
             # )
-            # | printer
-            RunnableParallel(
+            printer
+            | RunnableParallel(
                 prompt=lambda x: x["prompt"],
                 summary=lambda x: x["summary"],
                 context=lambda x: [
-                    # Document(page_content=PubmedQueryRun().invoke(x["prompt"]))
+                    Document(page_content=PubmedQueryRun().invoke(x["prompt"]))
                 ]
                 + self.db.as_retriever().invoke(x["prompt"]),
             )
@@ -277,6 +277,7 @@ class VectorDbQaService(QaService):
                     chatbot_with_history_promt_template
                     | printer
                     | llm
+                    | printer
                     | StrOutputParser()
                 ),
                 context=lambda x: x["context"],
