@@ -7,6 +7,7 @@ import {
     Card,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -21,6 +22,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import Link from "next/link";
 
 
 const formSchema = z.object({
@@ -57,17 +59,17 @@ export default function LoginForm() {
                 title: "Welcome",
                 description: "Successfully signed in!"
             })
-            router.push('/');
-            router.refresh(); 
-        } catch (error) {  
-            console.log('[LOGIN_FORM]: ',error);
+            router.push('/chat');
+            router.refresh();
+        } catch (error) {
+            console.log('[LOGIN_FORM]: ', error);
             // @ts-ignore
-            if(error.response.status===401){
+            if (error.response.status === 401) {
                 toast({
                     variant: "destructive",
                     description: "Invalid Credentials"
                 })
-            }else{
+            } else {
                 toast({
                     variant: "destructive",
                     description: "Something went wrong, please try again later."
@@ -78,7 +80,7 @@ export default function LoginForm() {
     }
 
     return (
-        <Card className="w-full">
+        <Card className="sm:w-[35%] w-[90%]">
             <CardHeader>
                 <CardTitle>
                     Sign In
@@ -89,7 +91,7 @@ export default function LoginForm() {
             </CardHeader>
             <CardContent>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleOnSubmit)} className="space-y-8 max-w-[380px]">
+                    <form onSubmit={form.handleSubmit(handleOnSubmit)} className="space-y-8 w-full">
                         <FormField
                             control={form.control}
                             name="email"
@@ -127,13 +129,28 @@ export default function LoginForm() {
                             }}
                         />
                         <div className="w-full flex justify-center items-center">
-                            <Button disabled={isLoading} size={"lg"} type="submit">
+                            <Button className="w-full" disabled={isLoading} size={"lg"} type="submit">
                                 Submit
                             </Button>
                         </div>
                     </form>
                 </Form>
             </CardContent>
+            <CardFooter className="flex flex-col">
+                <CardDescription>
+                    Don't have an account?
+                </CardDescription>
+                <Button
+                    variant={"link"}
+                    className="font-normal w-full"
+                    size={"sm"}
+                    asChild
+                >
+                    <Link href="/auth/sign-up">
+                        Sign Up
+                    </Link>
+                </Button>
+            </CardFooter>
         </Card>
     )
 }

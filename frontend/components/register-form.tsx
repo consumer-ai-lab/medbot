@@ -7,6 +7,7 @@ import {
     Card,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -23,6 +24,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import Link from "next/link";
 
 
 const formSchema = z.object({
@@ -60,7 +62,7 @@ export default function RegisterForm() {
                 title: "Welcome",
                 description: "Successfully signed up!"
             })
-            router.push('/');
+            router.push('/chat');
             router.refresh();
         } catch (error) {
             console.log('[REGISTER_FORM]: ',error);
@@ -74,7 +76,7 @@ export default function RegisterForm() {
 
 
     return (
-        <Card className="mt-12 w-full shadow-md">
+        <Card className="sm:w-[35%] w-[90%]">
             <CardHeader>
                 <CardTitle>
                     Signup
@@ -85,7 +87,7 @@ export default function RegisterForm() {
             </CardHeader>
             <CardContent>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleOnSubmit)} className="space-y-8 max-w-[380px]">
+                    <form onSubmit={form.handleSubmit(handleOnSubmit)} className="space-y-8">
                         <FormField
                             control={form.control}
                             name="email"
@@ -150,11 +152,26 @@ export default function RegisterForm() {
                             }}
                         />
                         <div className="w-full flex justify-center items-center" >
-                            <Button disabled={isLoading} size={"lg"} type="submit">Submit</Button>
+                            <Button className="w-full" disabled={isLoading} size={"lg"} type="submit">Submit</Button>
                         </div>
                     </form>
                 </Form>
             </CardContent>
+            <CardFooter className="flex flex-col">
+                <CardDescription>
+                    Already have an account?
+                </CardDescription>
+                <Button
+                    variant={"link"}
+                    className="font-normal w-full"
+                    size={"sm"}
+                    asChild
+                >
+                    <Link href="/auth/sign-in">
+                        Sign In
+                    </Link>
+                </Button>
+            </CardFooter>
         </Card>
     )
 }

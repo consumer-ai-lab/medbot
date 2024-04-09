@@ -3,21 +3,25 @@ import React from 'react'
 import { getAuthStatus } from '@/lib/get-auth-status'
 import { UserType } from '@/lib/user-type'
 import { redirect } from 'next/navigation'
- 
+import Navbar from '@/components/navbar'
+
 
 export default async function Page() {
 
   const resp: any = await getAuthStatus()
   const data: UserType = resp?.data
-  if(data === undefined){
+  if (data === undefined) {
     redirect('/auth/sign-in');
   }
 
   return (
-    <main className="flex h-[calc(90dvh)] flex-col items-center">
-      <ChatClient
-        user={data}
-      />
-    </main>
+    <>
+      <Navbar currentUser={data} />
+      <main className="flex h-[calc(90dvh)] flex-col items-center">
+        <ChatClient
+          user={data}
+        />
+      </main>
+    </>
   )
 }
