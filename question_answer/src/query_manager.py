@@ -207,8 +207,7 @@ Question: My brother has ashtama. how do i make sure he is cured?
 Rephrased Question: ["asthama treatment", "asthama definition", "asthama medication"]
 
 Question: {prompt}
-Rephrased Question: 
-"""
+Rephrased Question: """
 pubmed_query_prompt_template = PromptTemplate(
     template=pubmed_query_prompt, input_variables=["prompt"]
 )
@@ -325,9 +324,11 @@ class PubmedQaService(QaService):
                 questions=(
                     # search_query_prompt_template
                     pubmed_query_prompt_template
+                    | printer
                     | llm
                     | StrOutputParser()
                     | printer
+                    | RunnableLambda(hacky_extract_json_list)
                     | RunnableLambda(lambda x: json.loads(x))
                 ),
                 prompt=lambda x: x["prompt"],
