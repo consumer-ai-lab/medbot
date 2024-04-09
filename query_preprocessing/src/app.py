@@ -23,6 +23,7 @@ from .types import (
 from .redis_manager import get_redis_manager
 from .chat_summary_manager import get_chat_summary_manager
 from .create_llm import CreateLLM
+import asyncio
 
 load_dotenv(find_dotenv())
 # genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
@@ -68,7 +69,7 @@ async def get_ai_message(query: ApiQuery):
     # qa_query = QaQuery(**(query.dict()))
     # if not is_relevent(llm, qa_query):
     if True:
-        return QaResponse(
+        resp = QaResponse(
             **{
                 "type": QaResponse.Type.REJECTED,
                 "response": "I am sorry, I am not able to answer this question. Please ask something else related to medicine.",
@@ -78,8 +79,9 @@ async def get_ai_message(query: ApiQuery):
         # TODO: add the message to the chat history
 
         async def generator():
-            async for chunk in resp.response.split(" "):
-                yield chunk or ""
+            for chunk in resp.response.split():
+                yield f"{chunk} " 
+                await asyncio.sleep(1)
 
         response_messages=generator()
 

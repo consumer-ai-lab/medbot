@@ -8,15 +8,23 @@ import React from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import { Button, buttonVariants } from '../ui/button'
 import { ChatProps } from './chat'
+import { ChatRequestOptions } from 'ai'
+
+interface ChatBottombarProps {
+  input: string;
+  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>, chatRequestOptions?: ChatRequestOptions) => void;
+  isLoading: boolean;
+  stop: () => void;
+}
 
 export default function ChatBottombar({
-  messages,
   input,
   handleInputChange,
   handleSubmit,
   isLoading,
   stop,
-}: ChatProps) {
+}: ChatBottombarProps) {
   const [message, setMessage] = React.useState(input)
   const [isMobile, setIsMobile] = React.useState(false)
   const inputRef = React.useRef<HTMLTextAreaElement>(null)

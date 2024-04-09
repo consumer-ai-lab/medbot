@@ -13,19 +13,20 @@ import { CaretSortIcon, HamburgerMenuIcon } from '@radix-ui/react-icons'
 import { Message } from 'ai/react'
 import { Sidebar } from '../sidebar'
 import { Button } from '../ui/button'
+import { UserType } from '@/lib/user-type'
 
 interface ChatTopbarProps {
-  setSelectedModel: React.Dispatch<React.SetStateAction<string>>
   isLoading: boolean
   chatId?: string
   messages: Message[]
+  user:UserType
 }
 
 export default function ChatTopbar({
-  setSelectedModel,
   isLoading,
   chatId,
   messages,
+  user
 }: ChatTopbarProps) {
   const [models, setModels] = React.useState<string[]>([])
   const [open, setOpen] = React.useState(false)
@@ -48,7 +49,6 @@ export default function ChatTopbar({
 
   const handleModelChange = (model: string) => {
     setCurrentModel(model)
-    setSelectedModel(model)
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedModel', model)
     }
@@ -63,6 +63,7 @@ export default function ChatTopbar({
         </SheetTrigger>
         <SheetContent side="left">
           <Sidebar
+            user={user}
             chatId={chatId || ''}
             isCollapsed={false}
             isMobile={false}
