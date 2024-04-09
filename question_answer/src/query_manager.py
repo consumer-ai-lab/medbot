@@ -241,8 +241,8 @@ def hacky_extract_json_list(x):
 
 class QaService:
 
-    """ question summary """
-    def question_rephrase_chain(llm):
+    """ prompt summary """
+    def question_rephrase_chain(self, llm):
         return (
             question_rephrase_prompt_template
             | printer
@@ -255,8 +255,8 @@ class QaService:
             | RunnableLambda(lambda x: x["question"])
         )
 
-    """ context question """
-    def medical_chatbot_prompt_chain(llm):
+    """ context prompt """
+    def medical_chatbot_prompt_chain(self, llm):
         return (
             chatbot_promt_template
             | printer
@@ -265,8 +265,8 @@ class QaService:
             | StrOutputParser()
         )
 
-    """ context question summary """
-    def medical_chatbot_with_history_prompt_chain(llm):
+    """ context prompt summary """
+    def medical_chatbot_with_history_prompt_chain(self, llm):
         return (
             chatbot_with_history_promt_template
             | printer
@@ -275,8 +275,8 @@ class QaService:
             | StrOutputParser()
         )
 
-    """ question summary """
-    def generic_chatbot_prompt_chain(llm):
+    """ prompt summary """
+    def generic_chatbot_prompt_chain(self, llm):
         return (
             generic_chatbot_promt_template
             | printer
