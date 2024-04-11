@@ -75,7 +75,6 @@ export function ChatClient({
 		},
 		onResponse: (response) => {
 			if (response) {
-				setInput('')
 				setLoadingSubmit(false);
 			}
 		},
@@ -101,6 +100,7 @@ export function ChatClient({
 		};
 		setMessages((current) => [...current, userMessage]);
 		handleSubmit(e);
+		setInput('')
 	}
 
 	useEffect(() => {
