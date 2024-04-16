@@ -1,12 +1,9 @@
 'use client'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Message } from 'ai/react'
 import axios from 'axios'
 import { MoreHorizontal, SquarePen, Trash2 } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import SidebarSkeleton from './sidebar-skeleton'
 import {
@@ -24,7 +21,6 @@ import {
 } from './ui/dropdown-menu'
 import UserSettings from './user-settings'
 import { UserType } from '@/lib/user-type'
-import buildAxiosClient from '@/api/build-axios-client'
 
 interface SidebarProps {
   isCollapsed: boolean

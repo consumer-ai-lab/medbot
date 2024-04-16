@@ -2,10 +2,7 @@ import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import React, { useEffect, useRef } from 'react'
-import CodeDisplayBlock from '../code-display-block'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
-import { ChatProps } from './chat'
-import { Message } from 'ai'
 import { MessageType } from '@/lib/message-type'
 
 interface ChatListProps {
@@ -23,7 +20,6 @@ export default function ChatList({
 }: ChatListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const [name, setName] = React.useState<string>('')
-  const [localStorageIsLoading, setLocalStorageIsLoading] = React.useState(true)
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -37,7 +33,6 @@ export default function ChatList({
     const username = localStorage.getItem('user_name')
     if (username) {
       setName(username)
-      setLocalStorageIsLoading(false)
     }
   }, [])
 
