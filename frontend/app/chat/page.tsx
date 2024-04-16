@@ -16,8 +16,8 @@ export default async function Page() {
 
   return (
     <>
-      <Navbar currentUser={data} />
-      <main className="flex h-[calc(90dvh)] flex-col items-center">
+      {/* <Navbar currentUser={data} /> */}
+      <main className="flex h-[calc(100dvh)] flex-col items-center">
         <ChatClient
           user={data}
         />

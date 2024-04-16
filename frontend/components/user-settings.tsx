@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { GearIcon } from '@radix-ui/react-icons'
+import { Settings,LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { SettingsModal } from './settings-modal'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
@@ -70,7 +70,7 @@ export default function UserSettings(
           <DialogTrigger className="w-full">
             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
               <div className="flex w-full gap-2 p-1 items-center cursor-pointer">
-                <GearIcon className="w-4 h-4" />
+                <Settings className="w-4 h-4" />
                 Settings
               </div>
             </DropdownMenuItem>
@@ -82,7 +82,23 @@ export default function UserSettings(
             </DialogHeader>
           </DialogContent>
         </Dialog>
-        <Dialog></Dialog>
+        <hr/>
+        <Dialog>
+          <DialogTrigger className="w-full">
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <div className="flex w-full gap-2 p-1 items-center cursor-pointer">
+                <LogOut className="w-4 h-4" />
+                Logout
+              </div>
+            </DropdownMenuItem>
+          </DialogTrigger>
+          <DialogContent >
+            <DialogHeader className="space-y-4">
+              <DialogTitle>Settings</DialogTitle>
+              <SettingsModal  />
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
       </DropdownMenuContent>
     </DropdownMenu>
   )
