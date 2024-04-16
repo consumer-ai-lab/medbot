@@ -1,12 +1,11 @@
 'use client'
-
+import axios from 'axios'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
 import {
   Dialog,
   DialogContent,
@@ -14,28 +13,39 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { GearIcon } from '@radix-ui/react-icons'
+import { Settings, LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { SettingsModal } from './settings-modal'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import { Skeleton } from './ui/skeleton'
 import { UserType } from '@/lib/user-type'
+import { Separator } from './ui/separator'
+import { useRouter } from 'next/navigation'
+import { ModeToggle } from './mode-toggle'
 
 interface UserSettingsProps {
-  user:UserType
+  user: UserType
 }
 
 export default function UserSettings(
   { user }: UserSettingsProps
 ) {
   const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter();
 
-  useEffect(()=>{
-    if(user?.user_name){
+
+  async function logout() {
+    await axios.post('/api/auth/signout')
+    router.push('/')
+    router.refresh()
+  }
+
+  useEffect(() => {
+    if (user?.user_name) {
       setIsLoading(false)
     }
-  },[user?.user_name])
+  }, [user?.user_name])
 
   return (
     <DropdownMenu>
@@ -70,7 +80,7 @@ export default function UserSettings(
           <DialogTrigger className="w-full">
             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
               <div className="flex w-full gap-2 p-1 items-center cursor-pointer">
-                <GearIcon className="w-4 h-4" />
+                <Settings className="w-4 h-4" />
                 Settings
               </div>
             </DropdownMenuItem>
@@ -78,11 +88,19 @@ export default function UserSettings(
           <DialogContent >
             <DialogHeader className="space-y-4">
               <DialogTitle>Settings</DialogTitle>
-              <SettingsModal  />
+              <SettingsModal />
             </DialogHeader>
           </DialogContent>
         </Dialog>
-        <Dialog></Dialog>
+        <Separator className='bg-primary/10 m-2 w-[95%]' />
+        <Dialog>
+          <DropdownMenuItem onClick={() => logout()}>
+            <div className="flex w-full gap-2 p-1 items-center cursor-pointer">
+              <LogOut className="w-4 h-4" />
+              Logout
+            </div>
+          </DropdownMenuItem>
+        </Dialog>
       </DropdownMenuContent>
     </DropdownMenu>
   )

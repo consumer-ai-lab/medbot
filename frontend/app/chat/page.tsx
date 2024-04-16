@@ -3,7 +3,6 @@ import React from 'react'
 import { getAuthStatus } from '@/lib/get-auth-status'
 import { UserType } from '@/lib/user-type'
 import { redirect } from 'next/navigation'
-import Navbar from '@/components/navbar'
 
 
 export default async function Page() {
@@ -16,8 +15,7 @@ export default async function Page() {
 
   return (
     <>
-      <Navbar currentUser={data} />
-      <main className="flex h-[calc(90dvh)] flex-col items-center">
+      <main className="flex h-[calc(100dvh)] flex-col items-center">
         <ChatClient
           user={data}
         />

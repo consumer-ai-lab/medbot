@@ -1,12 +1,9 @@
 'use client'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Message } from 'ai/react'
 import axios from 'axios'
 import { MoreHorizontal, SquarePen, Trash2 } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import SidebarSkeleton from './sidebar-skeleton'
 import {
@@ -24,7 +21,6 @@ import {
 } from './ui/dropdown-menu'
 import UserSettings from './user-settings'
 import { UserType } from '@/lib/user-type'
-import buildAxiosClient from '@/api/build-axios-client'
 
 interface SidebarProps {
   isCollapsed: boolean
@@ -70,7 +66,7 @@ export function Sidebar({
   return (
     <div
       data-collapsed={isCollapsed}
-      className="relative justify-between group lg:bg-accent/20 lg:dark:bg-card/35 flex flex-col h-full gap-4 p-2 data-[collapsed=true]:p-2 "
+      className="relative justify-between group lg:bg-accent/20 lg:dark:bg-card/35 flex flex-col h-full p-2 gap-4 data-[collapsed=true]:p-2 "
     >
       <div className=" flex flex-col justify-between p-2 max-h-fit overflow-y-auto">
         <Button
@@ -80,7 +76,7 @@ export function Sidebar({
           variant="ghost"
           className="flex justify-between w-full h-14 text-sm xl:text-lg font-normal items-center "
         >
-          <div className="flex gap-3 items-center ">
+          <div className="p-1 flex gap-3 items-center ">
             {!isCollapsed && !isMobile && (
               <Image
                 src="/ollama.png"
@@ -116,7 +112,7 @@ export function Sidebar({
                     'flex justify-between w-full h-14 text-base font-normal items-center',
                   )}
                 >
-                  <div className="flex gap-3 items-center truncate">
+                  <div className="flex justify-between items-center truncate">
                     <div className="flex flex-col">
                       <span className="text-xs font-normal ">
                         {title.length > 0 ? title : ''}

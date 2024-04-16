@@ -17,6 +17,7 @@ import {
     FormField,
     FormItem,
     FormLabel,
+    FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "./ui/button";
@@ -26,7 +27,9 @@ import Link from "next/link";
 
 
 const formSchema = z.object({
-    email: z.string(),
+    email: z.string().email({
+        message:"Valid email is required."
+    }),
     password: z.string().min(8, {
         message: "Minimum length for password should be 8."
     }).max(20, {
@@ -105,6 +108,7 @@ export default function LoginForm() {
                                                 {...field}
                                             />
                                         </FormControl>
+                                        <FormMessage/>
                                     </FormItem>
                                 )
                             }}
@@ -124,6 +128,7 @@ export default function LoginForm() {
                                                 {...field}
                                             />
                                         </FormControl>
+                                        <FormMessage/>
                                     </FormItem>
                                 )
                             }}
