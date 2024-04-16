@@ -17,11 +17,13 @@ import { getSelectedEmbeddingModel, getSelectedModel, getSelectedStrategy } from
 import { Model } from '@/lib/model-enum'
 import { EmbeddingModel } from '@/lib/embedding-model-enum'
 import { Strategy } from '@/lib/strategy-enum'
+import { useTheme } from "next-themes"
 
 const models = Object.values(Model);
 const embeddingModels = Object.values(EmbeddingModel);
 const strategies = Object.values(Strategy);
 const formSchema = z.object({
+  theme:z.string(),
   model: z.string().min(2, {
     message: 'Name must be at least 2 characters.',
   }),
@@ -35,11 +37,12 @@ const formSchema = z.object({
 
 
 export function SettingsModal() {
- 
+  const { setTheme,theme,themes } = useTheme();
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      theme:theme,
       model: getSelectedModel() || Model.groq_mistral_8x7b,
       embeddingModel: getSelectedEmbeddingModel() || EmbeddingModel.gemini_pro,
       strategy: getSelectedStrategy() || Strategy.pubmed_search,
@@ -54,7 +57,7 @@ export function SettingsModal() {
     window.dispatchEvent(new Event('storage'))
     toast({
       title: "Success",
-      description: "Model changed successfully, please close the modal now.",
+      description: "Settings applied successfully, please close the modal now.",
     })
   }
 
@@ -64,6 +67,36 @@ export function SettingsModal() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 pt-4"
       >
+        <FormField
+          name="theme"
+          control={form.control}
+          render={({ field }) => {
+            return (
+              <FormItem>
+                <FormLabel>Theme</FormLabel>
+                <Select
+                  onValueChange={(theme)=>setTheme(theme)}
+                  value={theme}
+                  defaultValue={theme}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue
+                        defaultValue={field.value}
+                        placeholder="Select Theme"
+                      />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {themes.map((t) => {
+                      return <SelectItem key={t} value={t}>{t}</SelectItem>
+                    })}
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )
+          }}
+        />
         <FormField
           name="model"
           control={form.control}

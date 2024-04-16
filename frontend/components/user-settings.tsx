@@ -22,6 +22,7 @@ import { Skeleton } from './ui/skeleton'
 import { UserType } from '@/lib/user-type'
 import { Separator } from './ui/separator'
 import { useRouter } from 'next/navigation'
+import { ModeToggle } from './mode-toggle'
 
 interface UserSettingsProps {
   user: UserType
