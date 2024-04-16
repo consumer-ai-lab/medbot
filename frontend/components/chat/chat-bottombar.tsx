@@ -24,7 +24,7 @@ export default function ChatBottombar({
   stop,
 }: ChatBottombarProps) {
   const [isMobile, setIsMobile] = React.useState(false)
-  const {toast}=useToast();
+  const { toast } = useToast();
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
 
   React.useEffect(() => {
@@ -46,12 +46,12 @@ export default function ChatBottombar({
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if(input.trim().length===0){
+    if (input.trim().length === 0) {
       toast({
-        variant:'destructive',
-        description:'Cannot send empty string.'  
+        variant: 'destructive',
+        description: 'Cannot send empty string.'
       })
-    }else{
+    } else {
       handleSubmit(e);
     }
   }
@@ -108,7 +108,7 @@ export default function ChatBottombar({
             />
             {!isLoading ? (
               <Button
-                className={cn("shrink-0",input.trim().length===0&&"cursor-not-allowed")}
+                className={cn("shrink-0", input.trim().length === 0 && "cursor-not-allowed")}
                 variant="secondary"
                 size="icon"
                 type="submit"
