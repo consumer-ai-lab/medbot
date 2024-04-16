@@ -66,7 +66,7 @@ export function Sidebar({
   return (
     <div
       data-collapsed={isCollapsed}
-      className="relative justify-between group lg:bg-accent/20 lg:dark:bg-card/35 flex flex-col h-full gap-4 p-2 data-[collapsed=true]:p-2 "
+      className="relative justify-between group lg:bg-accent/20 lg:dark:bg-card/35 flex flex-col h-full p-2 gap-4 data-[collapsed=true]:p-2 "
     >
       <div className=" flex flex-col justify-between p-2 max-h-fit overflow-y-auto">
         <Button
@@ -76,7 +76,7 @@ export function Sidebar({
           variant="ghost"
           className="flex justify-between w-full h-14 text-sm xl:text-lg font-normal items-center "
         >
-          <div className="flex gap-3 items-center ">
+          <div className="p-1 flex gap-3 items-center ">
             {!isCollapsed && !isMobile && (
               <Image
                 src="/ollama.png"
@@ -112,7 +112,7 @@ export function Sidebar({
                     'flex justify-between w-full h-14 text-base font-normal items-center',
                   )}
                 >
-                  <div className="flex gap-3 items-center truncate">
+                  <div className="flex justify-between items-center truncate">
                     <div className="flex flex-col">
                       <span className="text-xs font-normal ">
                         {title.length > 0 ? title : ''}

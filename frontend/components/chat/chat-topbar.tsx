@@ -24,7 +24,7 @@ export default function ChatTopbar({
         <SheetTrigger>
           <Menu className="lg:hidden w-5 h-5" />
         </SheetTrigger>
-        <SheetContent side="left">
+        <SheetContent side="left" className='p-0 bg-secondary w-56 pt-5'>
           <Sidebar
             user={user}
             threadId={threadId}
