@@ -76,7 +76,6 @@ export function ChatClient({
 			}
 		},
 		onError: (error) => {
-			console.log("Error: ", error.message)
 			const message = JSON.parse(error.message);
 			setLoadingSubmit(false)
 			toast({
