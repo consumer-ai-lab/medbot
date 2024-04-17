@@ -21,6 +21,7 @@ import {
 } from './ui/dropdown-menu'
 import UserSettings from './user-settings'
 import { UserType } from '@/lib/user-type'
+import { useToast } from './ui/use-toast'
 
 interface SidebarProps {
   isCollapsed: boolean
@@ -44,6 +45,7 @@ export function Sidebar({
   user
 }: SidebarProps) {
 
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true);
   const [allThreads, setAllThreads] = useState<ThreadType[]>([]);
 
@@ -57,10 +59,29 @@ export function Sidebar({
   }, [threadId])
 
 
+  const handleDeleteChat = (deleteThreadId: string) => {
+    axios.delete('/api/chat/delete-thread', {
+      data: {
+        thread_id:deleteThreadId,
+      },
+      withCredentials: true,
+    }).then((resp) => {
+      if (resp.status === 200) {
+        setAllThreads(allThreads.filter((thread) => thread.id !== deleteThreadId))
+        if(threadId===deleteThreadId){
+          console.log(threadId,deleteThreadId);
+          startNewChat()
+        }
+        toast({
+          title: 'Chat deleted',
+          description: 'The chat was successfully deleted',
+        })
+      }
+    })
+  }
 
-  // TODO: Delete handler
-  const handleDeleteChat = (chatId: string) => {
-
+  const startNewChat = () => {
+    setThreadId('')
   }
 
   return (
@@ -70,9 +91,7 @@ export function Sidebar({
     >
       <div className=" flex flex-col justify-between p-2 max-h-fit overflow-y-auto">
         <Button
-          onClick={() => {
-            setThreadId('')
-          }}
+          onClick={startNewChat}
           variant="ghost"
           className="flex justify-between w-full h-14 text-sm xl:text-lg font-normal items-center "
         >

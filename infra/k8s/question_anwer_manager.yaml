@@ -35,6 +35,11 @@ spec:
                 secretKeyRef:
                   name: medbot-secret
                   key: GROQ_API_KEY
+            - name: CLAUDE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: medbot-secret
+                  key: CLAUDE_API_KEY
             - name: TAVILY_AI_API_KEY
               valueFrom:
                 secretKeyRef:
