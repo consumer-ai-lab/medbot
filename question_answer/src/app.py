@@ -4,8 +4,6 @@ from dotenv import find_dotenv, load_dotenv
 from .query_manager import get_response
 from .types import QaQuery, QaResponse
 
-load_dotenv(find_dotenv())
-
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,

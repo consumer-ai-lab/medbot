@@ -27,9 +27,6 @@ interface ChatClientProps {
 	user: UserType;
 }
 
-
-
-
 export function ChatClient({
 	defaultLayout = [30, 160],
 	defaultCollapsed = false,
