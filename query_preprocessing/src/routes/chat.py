@@ -40,8 +40,7 @@ async def get_ai_message(
             )
         elif not token_bucket.exists():
             token_bucket = get_token_bucket(key=current_user.user_id, sizeof_bucket=11)
-        
-        print(f"{token_bucket.size()=}")
+
         token_bucket.consume()
         llm = CreateLLM(query.model, query.embeddings_model).getModel()
 
