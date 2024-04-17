@@ -1,13 +1,8 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends,Response,status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from .security import get_current_user, UserBase
 import requests
-import google.generativeai as genai
-from langchain.prompts import PromptTemplate
-from langchain_google_genai import GoogleGenerativeAI
-from langchain_core.prompts import PromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 from dotenv import find_dotenv, load_dotenv
 from typing import List
 
@@ -119,4 +114,21 @@ def thread(
     chat_manager = get_redis_manager(current_user.user_id)
     chat_history = chat_manager.get_chat(query.thread_id)
     return chat_history
+
+@app.post("/delete-thread")
+def delete_thread(
+    query: ApiThreadQuery, current_user: UserBase = Depends(get_current_user)
+):
+    try:
+        chat_manager = get_redis_manager(current_user.user_id)
+        chat_manager.delete_thread(query.thread_id)
+        response = Response(
+            content="Deleted", status_code=status.HTTP_200_OK
+        )
+    except Exception as e:
+        print(e)
+        response = Response(
+            content=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    return response
 
