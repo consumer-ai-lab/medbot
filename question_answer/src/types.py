@@ -87,6 +87,16 @@ class QaQuery(pydantic.BaseModel):
     prompt: str
     summary: str
 
+    def __eq__(self,other):
+        if self.prompt==other.prompt:
+            return True
+        return False
+
+    def __hash__(self) -> int:
+        return hash(self.prompt)
+        
+        
+
 class Related(str, enum.Enum):
     YES = "YES"
     NO = "NO"

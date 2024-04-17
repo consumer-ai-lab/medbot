@@ -17,4 +17,5 @@ app.add_middleware(
 @app.post("/get-ai-response")
 def query(query: QaQuery):
     response = get_response(query)
+    print(get_response.cache_info())
     return QaResponse(**{"type": QaResponse.Type.OK, "response": response["response"]})
