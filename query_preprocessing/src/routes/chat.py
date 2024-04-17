@@ -31,7 +31,6 @@ async def get_ai_message(
 ):
     try:
         global token_bucket
-        print(f"{current_user=}")
         token_bucket = get_token_bucket(key=current_user.user_id, sizeof_bucket=11) if token_bucket is None else token_bucket
         if token_bucket.size() == 1 and token_bucket.exists():
             raise HTTPException(
