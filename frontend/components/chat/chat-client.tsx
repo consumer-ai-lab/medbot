@@ -76,10 +76,12 @@ export function ChatClient({
 			}
 		},
 		onError: (error) => {
+			console.log("Error: ", error.message)
+			const message = JSON.parse(error.message);
 			setLoadingSubmit(false)
 			toast({
 				variant: "destructive",
-				description: 'An error occurred. Please try again.'
+				description: message.detail,
 			})
 		},
 		body: {
