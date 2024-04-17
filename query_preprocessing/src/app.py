@@ -115,7 +115,7 @@ def thread(
     chat_history = chat_manager.get_chat(query.thread_id)
     return chat_history
 
-@app.post("/delete-thread")
+@app.delete("/delete-thread")
 def delete_thread(
     query: ApiThreadQuery, current_user: UserBase = Depends(get_current_user)
 ):

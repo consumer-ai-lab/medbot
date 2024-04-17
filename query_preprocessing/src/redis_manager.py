@@ -43,7 +43,6 @@ class RedisManager:
                 self.redis.lrem(self.key, 0, element)
                 break
 
-
     def get_threads(self) -> List[ChatThread]:
         threads = self.redis.lrange(self.key, 0, -1)
         return [] if threads is None else list(map(ChatThread.model_validate_json, threads))[::-1]
