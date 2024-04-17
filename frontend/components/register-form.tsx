@@ -28,7 +28,9 @@ import Link from "next/link";
 
 
 const formSchema = z.object({
-    email: z.string(),
+    email: z.string().email({
+        message:"Valid email is required."
+    }),
     user_name:z.string(),
     password: z.string().min(8, {
         message: "Minimum length for password should be 8."
@@ -101,10 +103,10 @@ export default function RegisterForm() {
                                                 {...field}
                                             />
                                         </FormControl>
+                                        <FormMessage/>
                                         <FormDescription>
                                             Please enter a valid email
                                         </FormDescription>
-                                        <FormMessage />
                                     </FormItem>
                                 )
                             }}
@@ -122,10 +124,10 @@ export default function RegisterForm() {
                                                 {...field}
                                             />
                                         </FormControl>
+                                        <FormMessage/>
                                         <FormDescription>
                                             Your username goes here.
                                         </FormDescription>
-                                        <FormMessage />
                                     </FormItem>
                                 )
                             }}
@@ -143,10 +145,10 @@ export default function RegisterForm() {
                                                 {...field}
                                             />
                                         </FormControl>
+                                        <FormMessage/>
                                         <FormDescription>
                                             We suggest you to take a note of your password, as we do have forgot password functionality just yet.
                                         </FormDescription>
-                                        <FormMessage />
                                     </FormItem>
                                 )
                             }}

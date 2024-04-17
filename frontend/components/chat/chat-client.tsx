@@ -27,13 +27,10 @@ interface ChatClientProps {
 	user: UserType;
 }
 
-
-
-
 export function ChatClient({
 	defaultLayout = [30, 160],
 	defaultCollapsed = false,
-	navCollapsedSize = 10,
+	navCollapsedSize = 15,
 	user
 }: ChatClientProps) {
 	const { toast } = useToast();

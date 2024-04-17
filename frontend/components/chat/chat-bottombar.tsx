@@ -1,14 +1,12 @@
 'use client'
-
 import { cn } from '@/lib/utils'
-import { ImageIcon, PaperPlaneIcon, StopIcon } from '@radix-ui/react-icons'
+import { PaperPlaneIcon, StopIcon } from '@radix-ui/react-icons'
 import { AnimatePresence, motion } from 'framer-motion'
-import Link from 'next/link'
 import React from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
-import { Button, buttonVariants } from '../ui/button'
-import { ChatProps } from './chat'
+import { Button } from '../ui/button'
 import { ChatRequestOptions } from 'ai'
+import { useToast } from '../ui/use-toast'
 
 interface ChatBottombarProps {
   input: string;
@@ -25,8 +23,8 @@ export default function ChatBottombar({
   isLoading,
   stop,
 }: ChatBottombarProps) {
-  const [message, setMessage] = React.useState(input)
   const [isMobile, setIsMobile] = React.useState(false)
+  const { toast } = useToast();
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
 
   React.useEffect(() => {
@@ -46,10 +44,22 @@ export default function ChatBottombar({
     }
   }, [])
 
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (input.trim().length === 0) {
+      toast({
+        variant: 'destructive',
+        description: 'Cannot send empty string.'
+      })
+    } else {
+      handleSubmit(e);
+    }
+  }
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>)
+      onSubmit(e as unknown as React.FormEvent<HTMLFormElement>)
     }
   }
 
@@ -72,7 +82,7 @@ export default function ChatBottombar({
           }}
         >
           <form
-            onSubmit={handleSubmit}
+            onSubmit={onSubmit}
             className="w-full items-center flex relative gap-2"
           >
             {/* <div className="flex">
@@ -98,11 +108,10 @@ export default function ChatBottombar({
             />
             {!isLoading ? (
               <Button
-                className="shrink-0"
+                className={cn("shrink-0", input.trim().length === 0 && "cursor-not-allowed")}
                 variant="secondary"
                 size="icon"
                 type="submit"
-                // disabled={!input.trim()}
               >
                 <PaperPlaneIcon className=" w-6 h-6 text-muted-foreground" />
               </Button>

@@ -4,7 +4,9 @@ from langchain_community.embeddings import OllamaEmbeddings
 import os
 from dotenv import load_dotenv, find_dotenv
 from langchain_community.llms import Ollama
+
 from langchain_groq import ChatGroq
+from langchain_anthropic import ChatAnthropic
 
 from .types import Model, EmbeddingsModel
 
@@ -41,6 +43,12 @@ class CreateLLM:
                     model_name=self.model.model(),
                     temperature=self.temp,
                     groq_api_key=os.getenv("GROQ_API_KEY"),
+                )
+            case Model.claude_3_opus:
+                llm = ChatAnthropic(
+                    model_name=self.model.model(),
+                    temperature=self.temp,
+                    anthropic_api_key=os.getenv("CLAUDE_API_KEY"),
                 )
             case _:
                 raise RuntimeError(message="Wrong llm name")

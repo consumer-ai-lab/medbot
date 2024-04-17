@@ -1,13 +1,6 @@
-from langchain.prompts import PromptTemplate
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.output_parsers.transform import BaseTransformOutputParser
 from langchain_core.runnables import (
-    RunnablePassthrough,
     RunnableParallel,
     RunnableLambda,
 )
@@ -22,8 +15,6 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
 from langchain.retrievers.document_compressors import LLMChainExtractor
-from langchain_community.llms import Ollama
-from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 from langchain.vectorstores.pgvector import PGVector
 
@@ -33,27 +24,18 @@ from langchain_community.tools.pubmed.tool import PubmedQueryRun
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain.retrievers.tavily_search_api import TavilySearchAPIRetriever, SearchDepth
 from bs4 import BeautifulSoup
-
-from langchain.globals import set_debug
-
 import google.generativeai as genai
 import os
-from typing import List, Dict
-import pprint
-import json
+from typing import List
 import requests
 import enum
-import pydantic
+from functools import lru_cache
 from dotenv import find_dotenv, load_dotenv
-
-from langchain.globals import set_debug
 
 from .types import Model, QaQuery, Strategy, EmbeddingsModel
 from .create_llm import CreateLLM
 from .proompter import Proompter, printer
 from .proompts import pubmed_query_prompt_template
-
-# set_debug(True)
 
 load_dotenv(find_dotenv())
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -361,7 +343,7 @@ class InternetQaService(Proompter):
             )
         )
 
-
+@lru_cache
 def get_response(query: QaQuery) -> str:
     create_llm = CreateLLM(query.model, query.embeddings_model)
     llm = create_llm.getModel()

@@ -149,13 +149,16 @@ To set up and run this project locally, follow these steps:
       type: Opaque
       stringData:
          GOOGLE_API_KEY: <your-api-key>
+         CLAUDE_API_KEY: <your-api-key>
+         GROQ_API_KEY: <your-api-key>
+         TAVILY_AI_API_KEY: <your-api-key>
          SECRET_KEY: <secret-to-sign-jwt>
          ALGORITHM: <algo-to-use-for-jwt>
          ACCESS_TOKEN_EXPIRE_MINUTES: <access-token-expiry-time>
      ```
    - Replace `my docker hub id` with your Docker Hub ID in `skaffold.yaml`, `query-preprocessing-manager.yaml`, `question_answer_manager.yaml`, and `rag_uploader_manager.yaml`. For example:
      ```yaml
-     adnantd/query-preprocessing => <your-name>/query-processing
+     prathameshkurve/query-preprocessing => <your-name>/query-processing
      ```
 
 **Linux**

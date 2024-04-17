@@ -21,6 +21,7 @@ class Model(str, enum.Enum):
     gemini_pro_chat = "gemini-pro-chat"
     ollama_llama2 = "ollama-llama2"
     ollama_llama2_uncensored = "ollama-llama2-uncensored"
+    claude_3_opus="claude-3-opus"
 
     # - [GroqCloud](https://console.groq.com/docs/models)
     groq_mistral_8x7b = "groq-mistral-8x7b"
@@ -41,8 +42,11 @@ class Model(str, enum.Enum):
                 return "llama2-70b-4096"
             case Model.groq_mistral_8x7b:
                 return "mixtral-8x7b-32768"
+            case Model.claude_3_opus:
+                return "claude-3-opus-20240229"
             case _:
                 return self.value
+
 
 class EmbeddingsModel(str, enum.Enum):
     gemini_pro = "gemini-pro"
@@ -86,6 +90,16 @@ class QaQuery(pydantic.BaseModel):
     strategy: Strategy
     prompt: str
     summary: str
+
+    def __eq__(self,other):
+        if self.prompt==other.prompt:
+            return True
+        return False
+
+    def __hash__(self) -> int:
+        return hash(self.prompt)
+        
+        
 
 class Related(str, enum.Enum):
     YES = "YES"
